@@ -1,0 +1,5 @@
+// Parameterized reusable rule. The quoted word in the name ("query") is the
+// parameter; callers write:  search for "laptop"
+// Inside the rule the value is referenced as: stored value "query"
+enter stored value "query" into "Search"
+click "Search"

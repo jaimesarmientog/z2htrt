@@ -1,0 +1,5 @@
+// Searching for a term echoes it back in the result panel as "search: <term>".
+open-search-page
+enter "laptop" into "Search"
+click "Search"
+check that page contains "search: laptop"

@@ -1,0 +1,4 @@
+// Submitting an empty search shows "search: no value".
+open-search-page
+click "Search"
+check that page contains "search: no value"

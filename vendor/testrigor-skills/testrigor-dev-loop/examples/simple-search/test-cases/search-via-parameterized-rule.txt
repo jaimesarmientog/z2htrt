@@ -1,0 +1,4 @@
+// Exercises the parameterized reusable rule  search for "query".
+open-search-page
+search for "monitor"
+check that page contains "search: monitor"

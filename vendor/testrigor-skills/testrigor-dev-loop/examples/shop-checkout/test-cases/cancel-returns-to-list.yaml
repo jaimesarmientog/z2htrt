@@ -1,0 +1,9 @@
+labels: [shop]
+customSteps: |
+  // Cancelling on the checkout page returns to the product list.
+  check that page contains "List of products"
+  click "View"
+  click "Buy"
+  check that page contains "Checkout"
+  click "Cancel"
+  check that page contains "List of products"

@@ -1,0 +1,7 @@
+{
+  "email": "buyer@example.com",
+  "card": "4111111111111111",
+  "fullName": "Ada Lovelace",
+  "crc": "123",
+  "expiration": "12 / 28"
+}

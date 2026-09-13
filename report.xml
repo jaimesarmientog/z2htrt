@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="tR Report" tests="1" time="1">
+  <testsuite name="TR - Zero to Hero" failures="0" tests="1" time="1" id="0">
+    <testcase name="Z2H - T00 - Smoke" status="success" time="1" classname="com.testrigor">
+      <properties>
+        <properties name="testCaseUuid" value="ba37a5b5-a3d8-4c9e-959f-214532ac80fd"/>
+      </properties>
+    </testcase>
+    <properties>
+      <properties name="testSuiteId" value="uMiYLgaAejiTncT2G"/>
+      <properties name="taskId" value="rfKzudWEzZB5Bsj7f"/>
+      <properties name="siteUrl" value="https://automationintesting.online"/>
+    </properties>
+  </testsuite>
+</testsuites>

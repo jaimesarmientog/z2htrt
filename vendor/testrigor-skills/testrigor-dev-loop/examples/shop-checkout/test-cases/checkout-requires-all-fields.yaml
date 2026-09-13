@@ -1,0 +1,14 @@
+labels: [shop, negative]
+customSteps: |
+  // Negative: a missing required field (Expiration) must block the purchase.
+  check that page contains "List of products"
+  click "View"
+  click "Buy"
+  check that page contains "Checkout"
+  enter stored value "email" into "Email address"
+  enter stored value "card" into "Credit Card"
+  enter stored value "crc" into "CRC"
+  enter stored value "fullName" into "Full Name"
+  click "Purchase"
+  check that page contains "Order summary"
+  check that page doesn't contain "Thank you for your purchase!"

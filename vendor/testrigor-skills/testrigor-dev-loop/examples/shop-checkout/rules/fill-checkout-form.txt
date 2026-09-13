@@ -1,0 +1,7 @@
+// Reusable rule: fill the checkout form using values from variables.json.
+// Fields are matched by their visible labels (not placeholders, which are ambiguous).
+enter stored value "email" into "Email address"
+enter stored value "card" into "Credit Card"
+enter stored value "expiration" into "Expiration"
+enter stored value "crc" into "CRC"
+enter stored value "fullName" into "Full Name"

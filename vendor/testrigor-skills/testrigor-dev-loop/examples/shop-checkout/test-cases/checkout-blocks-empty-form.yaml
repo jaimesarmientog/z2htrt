@@ -1,0 +1,10 @@
+labels: [shop, negative]
+customSteps: |
+  // Negative: submitting an empty checkout form must be blocked.
+  check that page contains "List of products"
+  click "View"
+  click "Buy"
+  check that page contains "Checkout"
+  click "Purchase"
+  check that page contains "Order summary"
+  check that page doesn't contain "Thank you for your purchase!"

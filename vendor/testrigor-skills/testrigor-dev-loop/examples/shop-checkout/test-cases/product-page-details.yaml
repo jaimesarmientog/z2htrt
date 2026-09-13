@@ -1,0 +1,7 @@
+labels: [shop]
+customSteps: |
+  // Opening a product from the list shows its details.
+  check that page contains "List of products"
+  click "View"
+  check that page contains "Product page"
+  check that page contains "Best in the Universe"

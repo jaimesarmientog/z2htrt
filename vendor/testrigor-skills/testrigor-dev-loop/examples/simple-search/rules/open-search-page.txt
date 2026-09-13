@@ -1,0 +1,4 @@
+// Reusable rule: navigate to the search demo app and confirm it loaded.
+// Invoked from a test case by writing its name:  open-search-page
+open url "http://r4d4.info/test-web-app/search-items/index.html"
+check that page contains "Business Page"

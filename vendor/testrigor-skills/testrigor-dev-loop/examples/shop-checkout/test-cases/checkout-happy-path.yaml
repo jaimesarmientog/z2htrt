@@ -1,0 +1,11 @@
+labels: [shop, checkout, smoke]
+customSteps: |
+  // Full purchase flow: product list -> product -> checkout -> confirmation.
+  check that page contains "List of products"
+  click "View"
+  check that page contains "Product page"
+  click "Buy"
+  check that page contains "Checkout"
+  fill-checkout-form
+  click "Purchase"
+  check that page contains "Thank you for your purchase!"
