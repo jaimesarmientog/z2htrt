@@ -1,0 +1,63 @@
+name: Push and Run TestRigor Suite
+
+# Job 2 of the companion repo pipeline.
+# Runs only after test cases have been generated (Job 1) and approved via PR review.
+# Trigger: merge to main (i.e. push to main after the PR gate has passed).
+on:
+  push:
+    branches:
+      - main
+
+env:
+  # Suite ID now comes from a repo Variable rather than being hardcoded.
+  # Set this at: Settings > Secrets and variables > Actions > Variables
+  # Variable name: TESTRIGOR_SUITE_ID, value: Dsgkh62ZByEZMxWow
+  TESTRIGOR_SUITE_ID: ${{ vars.TESTRIGOR_SUITE_ID }}
+  TESTRIGOR_APP_URL: "https://automationintesting.online"
+
+jobs:
+  push-and-run:
+    name: Push test cases and trigger async run
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 🔍 REVIEW: Node 20 chosen as current LTS; CLI only requires >=18.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Pinned to the current published version rather than @latest, since
+      # the package is still in 0.0.x-beta and flags may change between releases.
+      - name: Install TestRigor CLI
+        run: npm install -g @testrigor/testrigor-cli@0.0.51-beta
+
+      # Paths match generate.ts's actual output structure:
+      #   test-cases/<title>.txt   - plain steps
+      #   test-cases/<title>.yaml  - same, plus labels/dataset/UUID when needed
+      #   rules/<name>.txt         - reusable rules (.txt only, per generate.ts)
+      # Patterns are quoted so the CLI's own glob resolution handles `**` and
+      # `{yaml,txt}` expansion, rather than bash.
+      - name: Push test cases and trigger run (async)
+        env:
+          TESTRIGOR_PAT: ${{ secrets.TESTRIGOR_PAT }}
+        run: |
+          testrigor test-suite run "$TESTRIGOR_SUITE_ID" \
+            --auth-token "$TESTRIGOR_PAT" \
+            --url "$TESTRIGOR_APP_URL" \
+            --test-cases-path 'test-cases/**/*.{yaml,txt}' \
+            --rules-path 'rules/**/*.txt' \
+            --explicit-mutations \
+            --branch "${{ github.ref_name }}" \
+            --commit "${{ github.sha }}" \
+            --async
+
+      # The CLI prints a details URL (…/test-suites/<id>/runs/<taskId>) as part
+      # of its normal task output even in async mode. TestRigor also emails
+      # run results directly, so no additional polling/notification step
+      # is needed here.
+      - name: Note
+        run: echo "Run kicked off. See the CLI output above for the TestRigor run URL. TestRigor will email results — async mode does not fail this job on test failures."
