@@ -1,0 +1,133 @@
+{
+  "generatedAt": "2026-09-16T02:10:24.570Z",
+  "webFlows": [
+    {
+      "name": "Admin Login",
+      "url": "https://automationintesting.online/admin",
+      "fields": [
+        {
+          "label": "Username",
+          "role": "textbox",
+          "type": "text"
+        },
+        {
+          "label": "Password",
+          "role": "textbox",
+          "type": "password"
+        }
+      ],
+      "actions": [
+        {
+          "label": "Toggle navigation",
+          "role": "button"
+        },
+        {
+          "label": "Logout",
+          "role": "button"
+        },
+        {
+          "label": "Login",
+          "role": "button"
+        }
+      ],
+      "observedValidation": [
+        {
+          "scenario": "empty submit",
+          "inputs": {},
+          "resultText": "Invalid credentials"
+        },
+        {
+          "scenario": "invalid credentials",
+          "inputs": {
+            "Username": "invalid_user",
+            "Password": "invalid_pass"
+          },
+          "resultText": "Invalid credentials"
+        }
+      ],
+      "notes": [
+        "A \"Logout\" button is always present in the nav, even before authentication — it is not auth-gated and simply returns to the homepage. Don't treat its presence as evidence of a successful login in generated test cases.",
+        "Empty-submit and invalid-credentials submissions both return the exact same \"Invalid credentials\" message — the backend does not distinguish missing fields from wrong values. Generated negative test cases for this form should expect identical error text in both scenarios, not different ones."
+      ]
+    },
+    {
+      "name": "Booking Creation",
+      "url": "https://automationintesting.online",
+      "fields": [
+        {
+          "label": "Firstname",
+          "role": "textbox",
+          "type": "text"
+        },
+        {
+          "label": "Lastname",
+          "role": "textbox",
+          "type": "text"
+        },
+        {
+          "label": "Email",
+          "role": "textbox",
+          "type": "text"
+        },
+        {
+          "label": "Phone",
+          "role": "textbox",
+          "type": "text"
+        }
+      ],
+      "actions": [
+        {
+          "label": "(unlabeled action)",
+          "role": "button"
+        },
+        {
+          "label": "Reserve Now",
+          "role": "button"
+        },
+        {
+          "label": "Cancel",
+          "role": "button"
+        }
+      ],
+      "observedValidation": [
+        {
+          "scenario": "empty submit",
+          "inputs": {},
+          "resultText": "size must be between 3 and 18\nFirstname should not be blank\nLastname should not be blank\nmust not be empty\nsize must be between 3 and 30\nsize must be between 11 and 21\nmust not be empty"
+        }
+      ],
+      "notes": [
+        "The \"Reserve Now\" button appears twice in sequence: once to advance from the calendar to the guest-details form, and again to submit that form. Generated test cases must synchronize between the two clicks using testRigor's retry-wait pattern, since the calendar view has no \"Cancel\" button and the guest-details form does — e.g.: `wait 1 sec up to 10 times until page contains \"Cancel\" below \"Reserve Now\"`.",
+        "The homepage has a \"Book Now\" button (both words capitalized) that only scrolls to the rooms section, and separate \"Book now\" buttons (lowercase \"now\") on each room card that actually navigate to that room's booking page. Generated test cases must use testRigor's `click exactly \"Book now\"` to hit the correct one, since a plain `click \"Book now\"` would be ambiguous between the two."
+      ]
+    }
+  ],
+  "apiSurface": {
+    "specSource": "docs/restful-booker.openapi.yaml (hand-authored — see file header)",
+    "generatedTypes": "export interface paths {\n    \"/auth\": {\n        parameters: {\n            query?: never;\n            header?: never;\n            path?: never;\n            cookie?: never;\n        };\n        get?: never;\n        put?: never;\n        /** Authenticate and obtain a token for mutating booking endpoints. */\n        post: operations[\"createToken\"];\n        delete?: never;\n        options?: never;\n        head?: never;\n        patch?: never;\n        trace?: never;\n    };\n    \"/booking\": {\n        parameters: {\n            query?: never;\n            header?: never;\n            path?: never;\n            cookie?: never;\n        };\n        get?: never;\n        put?: never;\n        /** Create a new booking. */\n        post: operations[\"createBooking\"];\n        delete?: never;\n        options?: never;\n        head?: never;\n        patch?: never;\n        trace?: never;\n    };\n    \"/booking/{id}\": {\n        parameters: {\n            query?: never;\n            header?: never;\n            path?: never;\n            cookie?: never;\n        };\n        get?: never;\n        /** Fully replace an existing booking. Requires an auth token. */\n        put: operations[\"updateBooking\"];\n        post?: never;\n        /** Delete an existing booking. Requires an auth token. */\n        delete: operations[\"deleteBooking\"];\n        options?: never;\n        head?: never;\n        patch?: never;\n        trace?: never;\n    };\n}\nexport type webhooks = Record<string, never>;\nexport interface components {\n    schemas: {\n        AuthRequest: {\n            username: string;\n            password: string;\n        };\n        AuthResponse: {\n            token?: string;\n        };\n        BookingDates: {\n            /** Format: date */\n            checkin: string;\n            /** Format: date */\n            checkout: string;\n        };\n        Booking: {\n            firstname: string;\n            lastname: string;\n            totalprice: number;\n            depositpaid: boolean;\n            bookingdates: components[\"schemas\"][\"BookingDates\"];\n            additionalneeds?: string;\n        };\n        CreateBookingResponse: {\n            bookingid?: number;\n            booking?: components[\"schemas\"][\"Booking\"];\n        };\n    };\n    responses: never;\n    parameters: never;\n    requestBodies: never;\n    headers: never;\n    pathItems: never;\n}\nexport type $defs = Record<string, never>;\nexport interface operations {\n    createToken: {\n        parameters: {\n            query?: never;\n            header?: never;\n            path?: never;\n            cookie?: never;\n        };\n        requestBody: {\n            content: {\n                \"application/json\": components[\"schemas\"][\"AuthRequest\"];\n            };\n        };\n        responses: {\n            /** @description Token issued. */\n            200: {\n                headers: {\n                    [name: string]: unknown;\n                };\n                content: {\n                    \"application/json\": components[\"schemas\"][\"AuthResponse\"];\n                };\n            };\n        };\n    };\n    createBooking: {\n        parameters: {\n            query?: never;\n            header?: never;\n            path?: never;\n            cookie?: never;\n        };\n        requestBody: {\n            content: {\n                \"application/json\": components[\"schemas\"][\"Booking\"];\n            };\n        };\n        responses: {\n            /** @description Booking created. */\n            200: {\n                headers: {\n                    [name: string]: unknown;\n                };\n                content: {\n                    \"application/json\": components[\"schemas\"][\"CreateBookingResponse\"];\n                };\n            };\n        };\n    };\n    updateBooking: {\n        parameters: {\n            query?: never;\n            header: {\n                Cookie: string;\n            };\n            path: {\n                id: number;\n            };\n            cookie?: never;\n        };\n        requestBody: {\n            content: {\n                \"application/json\": components[\"schemas\"][\"Booking\"];\n            };\n        };\n        responses: {\n            /** @description Booking updated. */\n            200: {\n                headers: {\n                    [name: string]: unknown;\n                };\n                content: {\n                    \"application/json\": components[\"schemas\"][\"Booking\"];\n                };\n            };\n            /** @description Missing or invalid auth token. */\n            403: {\n                headers: {\n                    [name: string]: unknown;\n                };\n                content?: never;\n            };\n        };\n    };\n    deleteBooking: {\n        parameters: {\n            query?: never;\n            header: {\n                Cookie: string;\n            };\n            path: {\n                id: number;\n            };\n            cookie?: never;\n        };\n        requestBody?: never;\n        responses: {\n            /** @description Booking deleted. */\n            201: {\n                headers: {\n                    [name: string]: unknown;\n                };\n                content?: never;\n            };\n            /** @description Missing or invalid auth token. */\n            403: {\n                headers: {\n                    [name: string]: unknown;\n                };\n                content?: never;\n            };\n        };\n    };\n}\n",
+    "endpoints": [
+      {
+        "method": "POST",
+        "path": "/auth",
+        "authRequired": false
+      },
+      {
+        "method": "POST",
+        "path": "/booking",
+        "authRequired": false
+      },
+      {
+        "method": "PUT",
+        "path": "/booking/{id}",
+        "authRequired": true,
+        "authNote": "Requires Cookie: token=<token> from POST /auth"
+      },
+      {
+        "method": "DELETE",
+        "path": "/booking/{id}",
+        "authRequired": true,
+        "authNote": "Requires Cookie: token=<token> from POST /auth"
+      }
+    ]
+  }
+}

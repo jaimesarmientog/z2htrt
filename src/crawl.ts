@@ -4,10 +4,8 @@
  * Scope (per design doc Section 4): auth flow (admin login) and booking
  * flow (web + API) on the Restful-Booker Platform.
  *
- * Web discovery mixes confirmed selectors/behavior (verified via live
- * screenshots and dev tools inspection) with generic, semantic-first
- * enumeration for parts of the DOM not yet inspected directly. Flagged
- * inline wherever an assumption hasn't been verified against the live app.
+ * Verified end-to-end against the live app (see inline notes for what's
+ * confirmed vs. still-generic heuristics).
  */
 
 import { chromium, type Page } from "playwright";
@@ -19,11 +17,6 @@ import openapiTS, { astToString } from "openapi-typescript";
 const APP_URL = process.env.TESTRIGOR_APP_URL ?? "https://automationintesting.online";
 const OPENAPI_SPEC_PATH = path.join(process.cwd(), "docs", "restful-booker.openapi.yaml");
 const OUTPUT_PATH = path.join(process.cwd(), "tmp", "inventory.json");
-
-// ⚠️ REVIEW: hash-routing path assumed from the Restful-Booker Platform's
-// known convention. Confirm against the live app before relying on this.
-const ADMIN_LOGIN_URL = `${APP_URL}/#/admin`;
-const BOOKING_URL = APP_URL;
 
 interface FieldInfo {
   label: string;
@@ -48,22 +41,14 @@ interface WebFlow {
   fields: FieldInfo[];
   actions: ActionInfo[];
   observedValidation: ValidationObservation[];
-  // Interaction gotchas that don't fit the other fields — e.g. required
-  // synchronization steps between actions, quirks a flat field/action
-  // list wouldn't otherwise capture. Consumed by generate.ts as extra
-  // grounding context for the affected flow.
   notes?: string[];
 }
 
 /**
  * Enumerates visible form controls on the current page. Best-effort
  * accessible name resolution: aria-label > associated <label> > closest
- * <label> ancestor > placeholder > name attribute.
- *
- * Confirmed against the real guest-details form (Firstname, Lastname,
- * Email, Phone — all placeholder-labeled, no <label> elements), so the
- * placeholder fallback path is verified for that form specifically. Not
- * yet verified against the admin login form's markup.
+ * <label> ancestor > placeholder > name attribute. Confirmed working
+ * against both the admin login form and the guest-details booking form.
  */
 async function enumerateFields(page: Page): Promise<FieldInfo[]> {
   const fields: FieldInfo[] = [];
@@ -94,11 +79,8 @@ async function enumerateFields(page: Page): Promise<FieldInfo[]> {
 }
 
 /**
- * Enumerates clickable actions the same generic way.
- *
- * ⚠️ REVIEW: generic heuristic. Confirmed to at least correctly find
- * "Reserve Now" and "Cancel" per the real guest-details form, but not
- * exhaustively verified beyond that.
+ * Enumerates clickable actions. Checks aria-label first, then visible
+ * text, then a value attribute. Confirmed working against both flows.
  */
 async function enumerateActions(page: Page): Promise<ActionInfo[]> {
   const actions: ActionInfo[] = [];
@@ -107,8 +89,10 @@ async function enumerateActions(page: Page): Promise<ActionInfo[]> {
 
   for (let i = 0; i < count; i++) {
     const el = buttons.nth(i);
-    const label =
-      (await el.innerText().catch(() => "")) || (await el.getAttribute("value")) || "(unlabeled action)";
+    const ariaLabel = await el.getAttribute("aria-label");
+    const innerText = (await el.innerText().catch(() => "")).trim();
+    const valueAttr = await el.getAttribute("value");
+    const label = ariaLabel || innerText || valueAttr || "(unlabeled action)";
     actions.push({ label: label.trim(), role: "button" });
   }
 
@@ -116,24 +100,24 @@ async function enumerateActions(page: Page): Promise<ActionInfo[]> {
 }
 
 /**
- * ⚠️ REVIEW: heuristic, not a verified selector for the real app's
- * validation/error markup. Tries the most accessible pattern first
- * (role="alert"), then falls back to common class-based error
- * containers. Inspect actual output on first real run and adjust here
- * if nothing is captured.
+ * Waits for a validation/error element to actually become visible,
+ * rather than a fixed delay + one-shot check. Confirmed working: the
+ * app uses an ARIA live region ([role="alert"]) that exists empty in the
+ * DOM before being populated, plus a ".alert" class on the same/adjacent
+ * element once text is set — trying candidates in sequence and skipping
+ * empty matches handles this correctly.
  */
 async function captureFeedbackText(page: Page): Promise<string | null> {
-  const alertLocator = page.getByRole("alert");
-  if (await alertLocator.count()) {
-    const text = (await alertLocator.first().innerText()).trim();
-    if (text) return text;
-  }
+  const candidateSelectors = ['[role="alert"]', ".alert", ".error", '[class*="error"]', '[class*="invalid"]'];
 
-  const fallbackSelectors = [".alert", ".error", '[class*="error"]', '[class*="invalid"]'];
-  for (const selector of fallbackSelectors) {
-    const locator = page.locator(selector).first();
-    if (await locator.count()) {
-      const text = (await locator.innerText().catch(() => "")).trim();
+  for (const selector of candidateSelectors) {
+    const appeared = await page
+      .waitForSelector(selector, { timeout: 2000, state: "visible" })
+      .then(() => true)
+      .catch(() => false);
+
+    if (appeared) {
+      const text = (await page.locator(selector).first().innerText().catch(() => "")).trim();
       if (text) return text;
     }
   }
@@ -141,20 +125,34 @@ async function captureFeedbackText(page: Page): Promise<string | null> {
   return null;
 }
 
+/**
+ * Confirmed flow: from the homepage, click the "Admin" nav link (not a
+ * direct URL — this SPA's router doesn't reliably pick up a hash present
+ * on initial load). Login button targeted by name, not position — an
+ * earlier draft's positional .first() was wrongly clicking an unrelated
+ * button. Empty-submit and invalid-credentials cases both produce the
+ * same "Invalid credentials" message — confirmed real app behavior, not
+ * a capture bug.
+ */
 async function crawlAdminLogin(page: Page): Promise<WebFlow> {
-  await page.goto(ADMIN_LOGIN_URL, { waitUntil: "networkidle" });
+  await page.goto(APP_URL, { waitUntil: "networkidle" });
+
+  const adminNavLink = page.getByRole("link", { name: /^admin$/i }).first();
+  if (!(await adminNavLink.count())) {
+    throw new Error('crawlAdminLogin: no "Admin" nav link found on homepage.');
+  }
+  await adminNavLink.click();
+  await page.waitForTimeout(500);
 
   const fields = await enumerateFields(page);
   const actions = await enumerateActions(page);
   const observedValidation: ValidationObservation[] = [];
 
-  const submitButton = page.locator('button, [role="button"], input[type="submit"]').first();
+  const loginButton = page.getByRole("button", { name: /login/i }).first();
   const textInputs = page.locator('input:not([type="hidden"])');
 
-  // Negative case 1: empty submit.
-  if (await submitButton.count()) {
-    await submitButton.click().catch(() => {});
-    await page.waitForTimeout(500);
+  if (await loginButton.count()) {
+    await loginButton.click().catch(() => {});
     observedValidation.push({
       scenario: "empty submit",
       inputs: {},
@@ -162,17 +160,13 @@ async function crawlAdminLogin(page: Page): Promise<WebFlow> {
     });
   }
 
-  // Negative case 2: invalid credentials. Confirmed: this form has
-  // exactly two fields, username and password, in that order — so
-  // indexing the first two text inputs directly is safe here.
   const inputCount = await textInputs.count();
   if (inputCount >= 2) {
     const label0 = fields[0]?.label ?? "username";
     const label1 = fields[1]?.label ?? "password";
     await textInputs.nth(0).fill("invalid_user").catch(() => {});
     await textInputs.nth(1).fill("invalid_pass").catch(() => {});
-    await submitButton.click().catch(() => {});
-    await page.waitForTimeout(500);
+    await loginButton.click().catch(() => {});
     observedValidation.push({
       scenario: "invalid credentials",
       inputs: { [label0]: "invalid_user", [label1]: "invalid_pass" },
@@ -180,7 +174,22 @@ async function crawlAdminLogin(page: Page): Promise<WebFlow> {
     });
   }
 
-  return { name: "Admin Login", url: ADMIN_LOGIN_URL, fields, actions, observedValidation };
+  return {
+    name: "Admin Login",
+    url: page.url(),
+    fields,
+    actions,
+    observedValidation,
+    notes: [
+      'A "Logout" button is always present in the nav, even before authentication — it is not ' +
+        "auth-gated and simply returns to the homepage. Don't treat its presence as evidence of " +
+        "a successful login in generated test cases.",
+      'Empty-submit and invalid-credentials submissions both return the exact same "Invalid ' +
+        'credentials" message — the backend does not distinguish missing fields from wrong ' +
+        "values. Generated negative test cases for this form should expect identical error text " +
+        "in both scenarios, not different ones.",
+    ],
+  };
 }
 
 /**
@@ -188,53 +197,57 @@ async function crawlAdminLogin(page: Page): Promise<WebFlow> {
  * confirmed via live dev tools inspection: each selectable day is a
  * <button class="rbc-button-link"> inside <div class="rbc-date-cell">.
  * Cells belonging to the previous/next month (grid padding) carry
- * rbc-off-range and are excluded.
+ * rbc-off-range and are excluded. Waits for the calendar to actually
+ * render (confirmed: this SPA fetches room availability data after
+ * navigation, so a flat delay was previously too short/flaky).
  *
  * ⚠️ REVIEW: skips the first 2 in-range days as a buffer in case the
- * widget disables "today" or same-day booking — this is a guess to
- * reduce the odds of clicking a disabled cell, not a confirmed rule.
- * If the first click silently fails, this offset is the first thing to
- * adjust.
+ * widget disables "today" or same-day booking — this offset itself
+ * hasn't been specifically verified, only that clicking days at these
+ * positions has worked reliably across every real run so far.
  */
 async function pickCalendarDays(page: Page): Promise<boolean> {
-  const dayButtons = page.locator(".rbc-date-cell:not(.rbc-off-range) button.rbc-button-link");
-  const count = await dayButtons.count();
+  const calendarAppeared = await page
+    .waitForSelector(".rbc-date-cell", { timeout: 10000 })
+    .then(() => true)
+    .catch(() => false);
 
-  if (count < 4) return false; // not enough in-range days to safely pick two with a buffer
+  if (!calendarAppeared) return false;
 
-  await dayButtons.nth(2).click().catch(() => {});
+  const inRangeDayButtons = page.locator(".rbc-date-cell:not(.rbc-off-range) button.rbc-button-link");
+  const inRangeCount = await inRangeDayButtons.count();
+
+  if (inRangeCount < 4) return false;
+
+  await inRangeDayButtons.nth(2).click().catch(() => {});
   await page.waitForTimeout(200);
-  await dayButtons.nth(3).click().catch(() => {});
+  await inRangeDayButtons.nth(3).click().catch(() => {});
 
   return true;
 }
 
 /**
- * Confirmed flow: homepage -> click "Book now" on a room -> react-big-
+ * Confirmed flow: homepage -> click exact-case "Book now" (lowercase
+ * "now") on a room card — NOT the homepage's own "Book Now" button,
+ * which only scrolls to the rooms section and would otherwise be
+ * ambiguously matched by a case-insensitive selector -> react-big-
  * calendar widget appears -> click a check-in day, then a check-out day
  * -> click "Reserve Now" -> guest-details form appears (Firstname,
  * Lastname, Email, Phone, placeholder-labeled, submit button also
  * labeled "Reserve Now", with a "Cancel" button immediately after it).
- *
- * ⚠️ REVIEW: only the calendar step (pickCalendarDays) and the guest-
- * details form's fields/buttons have been verified against real
- * screenshots. The "Book now" control's exact accessible name on the
- * homepage room card, and the validation/error markup shown after an
- * empty submit, are still unverified — adjust after the first real run
- * if either doesn't match.
  */
 async function crawlBookingCreation(page: Page): Promise<WebFlow> {
-  await page.goto(BOOKING_URL, { waitUntil: "networkidle" });
+  await page.goto(APP_URL, { waitUntil: "networkidle" });
 
-  const bookNowButton = page.getByRole("button", { name: /book now/i }).first();
-  const bookNowLink = page.getByRole("link", { name: /book now/i }).first();
+  const bookNowButton = page.getByRole("button", { name: "Book now", exact: true }).first();
+  const bookNowLink = page.getByRole("link", { name: "Book now", exact: true }).first();
 
   if (await bookNowButton.count()) {
     await bookNowButton.click();
   } else if (await bookNowLink.count()) {
     await bookNowLink.click();
   } else {
-    throw new Error('crawlBookingCreation: no "Book now" control found on homepage.');
+    throw new Error('crawlBookingCreation: no exact-case "Book now" control found on homepage.');
   }
 
   await page.waitForTimeout(500);
@@ -243,17 +256,10 @@ async function crawlBookingCreation(page: Page): Promise<WebFlow> {
   if (!pickedDates) {
     throw new Error(
       "crawlBookingCreation: could not identify two clickable in-range calendar day cells " +
-        "(.rbc-date-cell:not(.rbc-off-range) button.rbc-button-link). Inspect the real markup " +
-        "if the calendar's structure has changed."
+        "after the calendar rendered. Inspect the real markup if the calendar's structure has changed."
     );
   }
 
-  // Confirmed: this first "Reserve Now" click sits below the calendar's
-  // price summary and advances from the calendar to the guest-details
-  // form. The form's own submit button carries the same accessible name
-  // — see the note below on why that's safe for our crawl (only one is
-  // ever visible at a time) and what generated test cases need to do
-  // about it (synchronize between the two clicks).
   const reserveButton = page.getByRole("button", { name: /reserve now/i }).first();
   if (!(await reserveButton.count())) {
     throw new Error('crawlBookingCreation: no "Reserve Now" button found after date selection.');
@@ -261,15 +267,10 @@ async function crawlBookingCreation(page: Page): Promise<WebFlow> {
   await reserveButton.click();
   await page.waitForTimeout(500);
 
-  // Guest-details form should now be visible.
   const fields = await enumerateFields(page);
   const actions = await enumerateActions(page);
   const observedValidation: ValidationObservation[] = [];
 
-  // Confirmed: submit button reads "Reserve Now", with a "Cancel" button
-  // immediately after it. Targeting by accessible name rather than
-  // position — an earlier draft used .last() across all buttons, which
-  // would have wrongly targeted "Cancel" instead.
   const submitButton = page.getByRole("button", { name: /reserve now/i }).first();
 
   // Negative case only: empty submit. We deliberately never submit a
@@ -278,7 +279,6 @@ async function crawlBookingCreation(page: Page): Promise<WebFlow> {
   // is testRigor's job at actual test-run time, not discovery time.
   if (await submitButton.count()) {
     await submitButton.click().catch(() => {});
-    await page.waitForTimeout(500);
     observedValidation.push({
       scenario: "empty submit",
       inputs: {},
@@ -288,7 +288,7 @@ async function crawlBookingCreation(page: Page): Promise<WebFlow> {
 
   return {
     name: "Booking Creation",
-    url: BOOKING_URL,
+    url: APP_URL,
     fields,
     actions,
     observedValidation,
@@ -298,6 +298,11 @@ async function crawlBookingCreation(page: Page): Promise<WebFlow> {
         'synchronize between the two clicks using testRigor\'s retry-wait pattern, since the ' +
         'calendar view has no "Cancel" button and the guest-details form does — e.g.: ' +
         '`wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"`.',
+      'The homepage has a "Book Now" button (both words capitalized) that only scrolls to the ' +
+        'rooms section, and separate "Book now" buttons (lowercase "now") on each room card that ' +
+        'actually navigate to that room\'s booking page. Generated test cases must use testRigor\'s ' +
+        '`click exactly "Book now"` to hit the correct one, since a plain `click "Book now"` would ' +
+        'be ambiguous between the two.',
     ],
   };
 }
@@ -368,4 +373,4 @@ async function main(): Promise<void> {
 main().catch((err) => {
   console.error(err);
   process.exit(1);
-});
+}); 
