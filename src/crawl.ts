@@ -15,8 +15,17 @@ import yaml from "js-yaml";
 import openapiTS, { astToString } from "openapi-typescript";
 
 const APP_URL = process.env.TESTRIGOR_APP_URL ?? "https://automationintesting.online";
+const API_URL = process.env.TESTRIGOR_API_URL ?? "https://restful-booker.herokuapp.com";
 const OPENAPI_SPEC_PATH = path.join(process.cwd(), "docs", "restful-booker.openapi.yaml");
 const OUTPUT_PATH = path.join(process.cwd(), "tmp", "inventory.json");
+
+// ⚠️ REVIEW: confirm the actual secret names once added to the repo/CI —
+// these are new secrets this probe extension introduces (not present in
+// the pipeline before now). Used only to obtain a real token for the
+// "valid token, non-existent booking id" probe; never used to create,
+// update, or delete a real booking.
+const ADMIN_USERNAME = process.env.RESTFUL_BOOKER_ADMIN_USERNAME;
+const ADMIN_PASSWORD = process.env.RESTFUL_BOOKER_ADMIN_PASSWORD;
 
 interface FieldInfo {
   label: string;
@@ -42,6 +51,22 @@ interface WebFlow {
   actions: ActionInfo[];
   observedValidation: ValidationObservation[];
   notes?: string[];
+}
+
+/**
+ * Live-probe observation for an API endpoint. Mirrors the shape of
+ * ValidationObservation (web) so generate.ts can treat both kinds of
+ * grounding evidence uniformly. Every probe here is deliberately
+ * non-mutating: invalid/unauthenticated requests, or a valid-token
+ * request against a booking id (999999) that isn't expected to exist.
+ * None of these create, update, or delete a real booking on the shared
+ * public demo instance.
+ */
+interface ApiProbeObservation {
+  scenario: string;
+  requestSummary: string;
+  status: number;
+  responseText: string;
 }
 
 /**
@@ -307,6 +332,137 @@ async function crawlBookingCreation(page: Page): Promise<WebFlow> {
   };
 }
 
+/**
+ * Truncates probe response bodies before they land in inventory.json —
+ * keeps the file (and later, the Claude prompt built from it) from
+ * ballooning on a verbose error body. ⚠️ REVIEW: 500 chars is a guess;
+ * tune if generated API test cases seem to be missing relevant response
+ * detail, or bloating prompts unnecessarily.
+ */
+function truncateResponseText(text: string, max = 500): string {
+  return text.length > max ? `${text.slice(0, max)}…` : text;
+}
+
+/**
+ * POST /auth with invalid credentials. Safe: doesn't create a session
+ * that needs cleanup, and never a valid credential pair.
+ */
+async function probeAuthInvalidCredentials(): Promise<ApiProbeObservation> {
+  const res = await fetch(`${API_URL}/auth`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: "invalid_user", password: "invalid_pass" }),
+  });
+  const responseText = await res.text();
+  return {
+    scenario: "invalid credentials",
+    requestSummary: 'POST /auth with username "invalid_user", password "invalid_pass"',
+    status: res.status,
+    responseText: truncateResponseText(responseText),
+  };
+}
+
+/**
+ * POST /booking with an empty body. Safe: the API is expected to reject
+ * this before persisting anything, mirroring the web flow's deliberate
+ * "never submit a fully valid booking during discovery" rule.
+ */
+async function probeBookingInvalidBody(): Promise<ApiProbeObservation> {
+  const res = await fetch(`${API_URL}/booking`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({}),
+  });
+  const responseText = await res.text();
+  return {
+    scenario: "empty booking payload",
+    requestSummary: "POST /booking with an empty JSON body ({})",
+    status: res.status,
+    responseText: truncateResponseText(responseText),
+  };
+}
+
+/**
+ * PUT or DELETE against a booking id (999999) that is not expected to
+ * exist, with no Cookie/token header at all. Safe: no auth means no
+ * mutation is expected to succeed regardless of whether the id is real.
+ */
+async function probeUnauthenticatedMutation(method: "PUT" | "DELETE"): Promise<ApiProbeObservation> {
+  const res = await fetch(`${API_URL}/booking/999999`, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: method === "PUT" ? JSON.stringify({ firstname: "Jane" }) : undefined,
+  });
+  const responseText = await res.text();
+  return {
+    scenario: "unauthenticated request",
+    requestSummary: `${method} /booking/999999 with no Cookie/token header`,
+    status: res.status,
+    responseText: truncateResponseText(responseText),
+  };
+}
+
+/**
+ * Obtains a real admin token via POST /auth. Requires
+ * RESTFUL_BOOKER_ADMIN_USERNAME / RESTFUL_BOOKER_ADMIN_PASSWORD to be
+ * set. This call only ever reads back a token — it cannot create,
+ * update, or delete anything by itself. Returns null (rather than
+ * throwing) if credentials are missing or the call fails, so the rest
+ * of the crawl can still proceed with unauthenticated-only probes.
+ */
+async function getAdminToken(): Promise<string | null> {
+  if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
+    console.warn(
+      "getAdminToken: RESTFUL_BOOKER_ADMIN_USERNAME / RESTFUL_BOOKER_ADMIN_PASSWORD not set — " +
+        "skipping the valid-token probe for PUT/DELETE."
+    );
+    return null;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/auth`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: ADMIN_USERNAME, password: ADMIN_PASSWORD }),
+    });
+    if (!res.ok) {
+      console.warn(`getAdminToken: POST /auth returned ${res.status} — skipping valid-token probe.`);
+      return null;
+    }
+    const data = (await res.json().catch(() => null)) as { token?: string } | null;
+    return data?.token ?? null;
+  } catch (err) {
+    console.warn("getAdminToken: request failed — skipping valid-token probe.", err);
+    return null;
+  }
+}
+
+/**
+ * PUT or DELETE against booking id 999999 with a real, valid admin
+ * token. Safe: the id isn't expected to exist, so the expected outcome
+ * is a "not found"-style response, not a real mutation. This is what
+ * distinguishes this probe from probeUnauthenticatedMutation — it
+ * grounds the *authenticated-but-not-found* response shape, which is
+ * a genuinely different code path than the unauthenticated one.
+ */
+async function probeValidTokenMutation(method: "PUT" | "DELETE", token: string): Promise<ApiProbeObservation> {
+  const res = await fetch(`${API_URL}/booking/999999`, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `token=${token}`,
+    },
+    body: method === "PUT" ? JSON.stringify({ firstname: "Jane" }) : undefined,
+  });
+  const responseText = await res.text();
+  return {
+    scenario: "valid token, non-existent booking id",
+    requestSummary: `${method} /booking/999999 with a valid admin token`,
+    status: res.status,
+    responseText: truncateResponseText(responseText),
+  };
+}
+
 async function buildApiSurface() {
   const rawSpec = await fs.readFile(OPENAPI_SPEC_PATH, "utf8");
   const parsedSpec = yaml.load(rawSpec);
@@ -314,23 +470,51 @@ async function buildApiSurface() {
   const ast = await openapiTS(parsedSpec as Parameters<typeof openapiTS>[0]);
   const generatedTypes = astToString(ast);
 
+  // Each probe is independently wrapped so one failing request (network
+  // blip, demo instance hiccup) doesn't take down the whole API surface
+  // build — same "catch, log, continue" convention as the web crawlers
+  // in main() below.
+  const runProbe = async (label: string, probe: () => Promise<ApiProbeObservation>): Promise<ApiProbeObservation[]> => {
+    try {
+      return [await probe()];
+    } catch (err) {
+      console.error(`API probe failed (${label}):`, err);
+      return [];
+    }
+  };
+
+  const authProbes = await runProbe("POST /auth invalid credentials", probeAuthInvalidCredentials);
+  const bookingProbes = await runProbe("POST /booking empty body", probeBookingInvalidBody);
+  const putUnauthProbes = await runProbe("PUT unauthenticated", () => probeUnauthenticatedMutation("PUT"));
+  const deleteUnauthProbes = await runProbe("DELETE unauthenticated", () => probeUnauthenticatedMutation("DELETE"));
+
+  const adminToken = await getAdminToken();
+  const putValidProbes = adminToken
+    ? await runProbe("PUT valid token", () => probeValidTokenMutation("PUT", adminToken))
+    : [];
+  const deleteValidProbes = adminToken
+    ? await runProbe("DELETE valid token", () => probeValidTokenMutation("DELETE", adminToken))
+    : [];
+
   return {
     specSource: "docs/restful-booker.openapi.yaml (hand-authored — see file header)",
     generatedTypes,
     endpoints: [
-      { method: "POST", path: "/auth", authRequired: false },
-      { method: "POST", path: "/booking", authRequired: false },
+      { method: "POST", path: "/auth", authRequired: false, observedProbes: authProbes },
+      { method: "POST", path: "/booking", authRequired: false, observedProbes: bookingProbes },
       {
         method: "PUT",
         path: "/booking/{id}",
         authRequired: true,
         authNote: "Requires Cookie: token=<token> from POST /auth",
+        observedProbes: [...putUnauthProbes, ...putValidProbes],
       },
       {
         method: "DELETE",
         path: "/booking/{id}",
         authRequired: true,
         authNote: "Requires Cookie: token=<token> from POST /auth",
+        observedProbes: [...deleteUnauthProbes, ...deleteValidProbes],
       },
     ],
   };
@@ -373,4 +557,4 @@ async function main(): Promise<void> {
 main().catch((err) => {
   console.error(err);
   process.exit(1);
-}); 
+});
