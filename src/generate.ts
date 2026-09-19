@@ -32,14 +32,20 @@ import path from "node:path";
 // ---------------------------------------------------------------------
 
 const MODEL = "claude-sonnet-5";
-// ⚠️ REVIEW: @anthropic-ai/sdk is pinned to ^0.32.0 in package.json,
-// which predates this model's release. Basic messages.create() calls
-// are expected to work regardless (the SDK mostly just forwards the
-// model string), but confirm with one real run before relying on it.
-// Also note: Sonnet 5 uses a new tokenizer that produces ~30% more
-// tokens for the same text than older Sonnet versions — if output ever
-// looks truncated, raise MAX_TOKENS before suspecting a prompt problem.
-const MAX_TOKENS = 4096;
+// Confirmed root cause of the first live run's total failure (all 6 units
+// failed both attempts with "Unexpected end of JSON input"): Sonnet 5 ships
+// with adaptive thinking ON by default, and its thinking tokens count
+// against the same max_tokens budget as the actual answer — there's no
+// more manual thinking-budget parameter to separate them (it now returns a
+// 400 error). At 4096, the model was very likely running out of budget
+// mid-thinking before it ever finished writing the JSON, which is why
+// every unit failed identically regardless of how simple the flow was.
+// 16000 gives generous headroom over that for both thinking and a
+// multi-test-case JSON payload, while keeping worst-case cost per call
+// small (~$0.16 at $10/MTok output). ⚠️ REVIEW: this is a reasoned fix
+// based on confirmed Sonnet 5 behavior, not yet re-validated with a real
+// run — watch the next run's logs for the same truncation signature.
+const MAX_TOKENS = 16000;
 
 const INVENTORY_PATH = path.join(process.cwd(), "tmp", "inventory.json");
 const TEST_CASES_DIR = path.join(process.cwd(), "test-cases", "generated");
@@ -298,6 +304,17 @@ async function callClaude(system: string, user: string): Promise<string> {
     messages: [{ role: "user", content: user }],
   });
 
+  if (response.stop_reason === "max_tokens") {
+    // Fail loudly and specifically here rather than letting this surface
+    // downstream as a confusing "Unexpected end of JSON input" from
+    // JSON.parse — that's exactly what happened in the first live run,
+    // and it cost real time to trace back to a token-budget problem.
+    throw new Error(
+      `Response was truncated: stop_reason=max_tokens at the current MAX_TOKENS budget (${MAX_TOKENS}). ` +
+        "Raise MAX_TOKENS rather than treating this as a JSON/prompt problem."
+    );
+  }
+
   const textBlocks = response.content.filter((block): block is Anthropic.TextBlock => block.type === "text");
   return textBlocks.map((block) => block.text).join("\n");
 }
@@ -555,6 +572,19 @@ async function main(): Promise<void> {
 
   if (skipped.length > 0) {
     console.error(`The following units were skipped after failing twice: ${skipped.join(", ")}`);
+  }
+
+  // Partial failure is tolerated by design (that's the point of retry-once
+  // -then-skip-and-continue) — but total failure is a different thing
+  // entirely: there's no "rest" to continue with, nothing gets written,
+  // and the first live run showed this can otherwise exit 0 with an
+  // empty output directory, which create-pull-request then silently
+  // interprets as "nothing changed" rather than "generation failed."
+  if (flowResults.length === 0 && units.length > 0) {
+    throw new Error(
+      `All ${units.length} unit(s) failed to generate — nothing was written. See the errors above ` +
+        "for the actual per-unit failure cause."
+    );
   }
 }
 
