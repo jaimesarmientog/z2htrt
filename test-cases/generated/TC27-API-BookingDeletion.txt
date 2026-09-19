@@ -1,0 +1,4 @@
+// Delete a booking with an empty auth token value returns 403
+// Delete a booking with an empty auth token value returns 403
+RR - Create a valid booking via API and save its id
+call api delete with parameters "${apiBaseUrl}/booking/${bookingId}" with headers with parameters "Cookie:token=" and then check that http code is 403

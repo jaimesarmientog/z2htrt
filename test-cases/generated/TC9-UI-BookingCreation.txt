@@ -1,0 +1,3 @@
+// Room card 'Book now' button navigates to that room's booking/calendar page
+RR - Navigate to room booking page
+check that page contains "Reserve Now"

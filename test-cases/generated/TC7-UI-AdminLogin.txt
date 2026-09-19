@@ -1,0 +1,5 @@
+// Toggling the navigation menu on the Admin Login page does not remove the login form
+RR - Navigate to Admin Login page
+click "Toggle navigation"
+check that page contains "Username"
+check that page contains "Password"

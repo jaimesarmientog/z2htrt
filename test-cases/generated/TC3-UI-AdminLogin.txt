@@ -1,0 +1,4 @@
+// Submitting the Admin Login form with invalid username and password shows an invalid credentials error
+RR - Navigate to Admin Login page
+RR - Enter admin credentials "invalid_user" and "invalid_pass"
+RR - Click Login and verify invalid credentials message

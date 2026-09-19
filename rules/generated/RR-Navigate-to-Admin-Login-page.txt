@@ -1,0 +1,3 @@
+open url "/admin"
+check that page contains "Username"
+check that page contains "Password"

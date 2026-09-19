@@ -1,0 +1,4 @@
+// POST /booking - empty JSON body ({}) returns 500 Internal Server Error
+// POST /booking - empty JSON body ({}) returns 500 Internal Server Error
+call api post with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body "{}" and then check that http code is 500
+check that page contains "Internal Server Error"

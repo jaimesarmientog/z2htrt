@@ -1,0 +1,5 @@
+// PUT /booking/{id} - edge case: authenticated update omitting the optional additionalneeds field still succeeds
+RR - Authenticate as admin via API
+RR - Create a valid booking via API and save its id
+call api put with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers with parameters "Cookie:token=${authToken}" and body "{\"firstname\":\"Anna\",\"lastname\":\"Lee\",\"totalprice\":99,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2024-03-01\",\"checkout\":\"2024-03-03\"}}" and get "$.firstname" and save it as "minimalUpdateFirstname" and then check that http code is 200
+check that stored value "minimalUpdateFirstname" equals "Anna"

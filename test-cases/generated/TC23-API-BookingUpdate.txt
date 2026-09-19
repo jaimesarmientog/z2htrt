@@ -1,0 +1,2 @@
+// PUT /booking/{id} - negative: request sent with an invalid/malformed token value is rejected with 403
+call api put "https://restful-booker.herokuapp.com/booking/999999" with headers "Content-Type:application/json" and "Cookie:token=invalidTokenValue123" and body "{\"firstname\":\"John\",\"lastname\":\"Smith\",\"totalprice\":150,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2024-01-01\",\"checkout\":\"2024-01-05\"},\"additionalneeds\":\"Breakfast\"}" and then check that http code is 403

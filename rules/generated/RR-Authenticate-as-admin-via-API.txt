@@ -1,0 +1,1 @@
+call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body "{\"username\":\"admin\",\"password\":\"password123\"}" and get "$.token" and save it as "authToken" and then check that http code is 200

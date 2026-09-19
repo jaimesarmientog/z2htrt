@@ -1,0 +1,4 @@
+enter stored value "firstName" into "Firstname"
+enter stored value "lastName" into "Lastname"
+enter stored value "email" into "Email"
+enter stored value "phone" into "Phone"

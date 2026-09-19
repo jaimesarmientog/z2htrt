@@ -1,0 +1,5 @@
+// Delete an existing booking with a valid auth token returns 201
+// Delete an existing booking with a valid auth token returns 201
+RR - Authenticate as admin via API
+RR - Create a valid booking via API and save its id
+call api delete with parameters "${apiBaseUrl}/booking/${bookingId}" with headers with parameters "Cookie:token=${authToken}" and then check that http code is 201

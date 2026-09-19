@@ -1,0 +1,8 @@
+// Successful booking submission with valid guest details clears the previously observed validation errors
+RR - Navigate to room booking page
+RR - Advance from calendar to guest details form
+RR - Fill guest details form with "John" "Doe" "john.doe@example.com" "01234567890"
+click "Reserve Now"
+check that page does not contain "Firstname should not be blank"
+check that page does not contain "Lastname should not be blank"
+check that page does not contain "must not be empty"

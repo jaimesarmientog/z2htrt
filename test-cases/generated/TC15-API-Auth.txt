@@ -1,0 +1,2 @@
+// Verify POST /auth still returns http 200 when username and password are empty strings (edge case, endpoint documented to only ever respond 200)
+call api post with parameters "${apiBaseUrl}/auth" and body "{\"username\": \"\", \"password\": \"\"}" and then check that http code is 200

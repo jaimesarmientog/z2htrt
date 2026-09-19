@@ -1,0 +1,11 @@
+// POST /booking - full valid payload (with optional additionalneeds) returns 200 and echoes all booking fields
+// POST /booking - full valid payload (with optional additionalneeds) returns 200 and echoes all booking fields
+RR - Create a valid booking via API and save its id
+check that page contains "bookingid"
+check that page contains string with parameters "\"firstname\":\"James\""
+check that page contains string with parameters "\"lastname\":\"Brown\""
+check that page contains string with parameters "\"totalprice\":111"
+check that page contains string with parameters "\"depositpaid\":true"
+check that page contains string with parameters "\"checkin\":\"2025-01-01\""
+check that page contains string with parameters "\"checkout\":\"2025-01-05\""
+check that page contains string with parameters "\"additionalneeds\":\"Breakfast\""

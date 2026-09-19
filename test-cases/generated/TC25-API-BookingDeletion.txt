@@ -1,0 +1,3 @@
+// Delete a booking without any auth token returns 403 Forbidden
+// Delete a booking without any auth token returns 403 Forbidden
+call api delete with parameters "${apiBaseUrl}/booking/999999" and then check that http code is 403

@@ -1,0 +1,3 @@
+// Submitting the Admin Login form with no credentials shows an invalid credentials error
+RR - Navigate to Admin Login page
+RR - Click Login and verify invalid credentials message

@@ -1,0 +1,4 @@
+// Submitting the Admin Login form with only a username (missing password) shows an invalid credentials error
+RR - Navigate to Admin Login page
+enter "invalid_user" into "Username"
+RR - Click Login and verify invalid credentials message

@@ -1,0 +1,3 @@
+// Verify POST /auth with invalid credentials returns 200 with a Bad credentials reason (matches observed probe)
+call api post with parameters "${apiBaseUrl}/auth" and body "{\"username\": \"invalid_user\", \"password\": \"invalid_pass\"}" and get "$.reason" and save it as "authFailureReason" and then check that http code is 200
+check that stored value "authFailureReason" equals "Bad credentials"

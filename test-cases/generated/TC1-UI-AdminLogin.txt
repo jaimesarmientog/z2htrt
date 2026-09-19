@@ -1,0 +1,6 @@
+// Admin Login page displays the expected fields and actions
+RR - Navigate to Admin Login page
+check that page contains "Username"
+check that page contains "Password"
+check that page contains "Login"
+check that page contains "Logout"

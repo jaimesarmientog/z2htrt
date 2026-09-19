@@ -1,0 +1,5 @@
+// Logout button is visible on the Admin Login page before authentication and navigates away from the login form
+RR - Navigate to Admin Login page
+check that page contains "Logout"
+click "Logout"
+check that page does not contain "Username"

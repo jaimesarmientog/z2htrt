@@ -1,0 +1,3 @@
+// Homepage 'Book Now' button scrolls to the rooms section without navigating to a booking page
+click exactly "Book Now"
+check that page contains "Book now"

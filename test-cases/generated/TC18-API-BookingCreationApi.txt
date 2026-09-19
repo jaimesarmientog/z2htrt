@@ -1,0 +1,8 @@
+// POST /booking - valid payload omitting the optional additionalneeds field returns 200 and echoes the required booking fields
+// POST /booking - valid payload omitting the optional additionalneeds field returns 200 and echoes the required booking fields
+call api post with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body "{\"firstname\":\"Anna\",\"lastname\":\"Smith\",\"totalprice\":250,\"depositpaid\":false,\"bookingdates\":{\"checkin\":\"2025-03-10\",\"checkout\":\"2025-03-15\"}}" and get "$.bookingid" and save it as "bookingId2" and then check that http code is 200
+check that page contains "bookingid"
+check that page contains string with parameters "\"firstname\":\"Anna\""
+check that page contains string with parameters "\"lastname\":\"Smith\""
+check that page contains string with parameters "\"totalprice\":250"
+check that page contains string with parameters "\"depositpaid\":false"

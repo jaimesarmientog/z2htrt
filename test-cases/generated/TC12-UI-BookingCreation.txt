@@ -1,0 +1,5 @@
+// Cancel button on the guest details form returns to the calendar view where no Cancel button is shown
+RR - Navigate to room booking page
+RR - Advance from calendar to guest details form
+click "Cancel"
+check that page does not contain "Cancel"

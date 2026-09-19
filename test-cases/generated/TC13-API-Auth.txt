@@ -1,0 +1,3 @@
+// Verify POST /auth issues a token for valid admin credentials
+RR - Authenticate as admin via API
+check that stored value "authToken" is not blank
