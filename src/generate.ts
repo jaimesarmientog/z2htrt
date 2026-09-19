@@ -32,20 +32,18 @@ import path from "node:path";
 // ---------------------------------------------------------------------
 
 const MODEL = "claude-sonnet-5";
-// Confirmed root cause of the first live run's total failure (all 6 units
-// failed both attempts with "Unexpected end of JSON input"): Sonnet 5 ships
-// with adaptive thinking ON by default, and its thinking tokens count
-// against the same max_tokens budget as the actual answer — there's no
-// more manual thinking-budget parameter to separate them (it now returns a
-// 400 error). At 4096, the model was very likely running out of budget
-// mid-thinking before it ever finished writing the JSON, which is why
-// every unit failed identically regardless of how simple the flow was.
-// 16000 gives generous headroom over that for both thinking and a
-// multi-test-case JSON payload, while keeping worst-case cost per call
-// small (~$0.16 at $10/MTok output). ⚠️ REVIEW: this is a reasoned fix
-// based on confirmed Sonnet 5 behavior, not yet re-validated with a real
-// run — watch the next run's logs for the same truncation signature.
+// Base output budget for a normal, non-truncated call. Sonnet 5 runs
+// adaptive thinking on by default, and thinking tokens count against
+// this same budget — see ESCALATED_MAX_TOKENS below for how a call that
+// still doesn't fit is handled, rather than us guessing an ever-bigger
+// fixed number through repeated live runs.
 const MAX_TOKENS = 16000;
+// Retry budget used ONLY when a call's first attempt is truncated
+// (stop_reason=max_tokens) — confirmed to happen even at 16000 for at
+// least one unit (api:POST /booking) in real runs. 64000 is comfortably
+// under the model's 128k ceiling while keeping worst-case cost bounded
+// (~$0.64 at $10/MTok output for that one retried call).
+const ESCALATED_MAX_TOKENS = 64000;
 
 const INVENTORY_PATH = path.join(process.cwd(), "tmp", "inventory.json");
 const TEST_CASES_DIR = path.join(process.cwd(), "test-cases", "generated");
@@ -296,23 +294,30 @@ function stripCodeFence(text: string): string {
   return fenceMatch ? fenceMatch[1] : trimmed;
 }
 
-async function callClaude(system: string, user: string): Promise<string> {
+/**
+ * Thrown when a response is cut off by the token budget (stop_reason ===
+ * "max_tokens") rather than by a genuine JSON/prompt problem. Carrying
+ * this as a distinct error type (rather than a generic Error) is what
+ * lets the retry logic below escalate the budget specifically for this
+ * failure mode, instead of retrying identically and failing the same way.
+ */
+class TruncatedResponseError extends Error {
+  constructor(public readonly maxTokensUsed: number) {
+    super(`Response was truncated: stop_reason=max_tokens at max_tokens=${maxTokensUsed}.`);
+    this.name = "TruncatedResponseError";
+  }
+}
+
+async function callClaude(system: string, user: string, maxTokens: number): Promise<string> {
   const response = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: MAX_TOKENS,
+    max_tokens: maxTokens,
     system,
     messages: [{ role: "user", content: user }],
   });
 
   if (response.stop_reason === "max_tokens") {
-    // Fail loudly and specifically here rather than letting this surface
-    // downstream as a confusing "Unexpected end of JSON input" from
-    // JSON.parse — that's exactly what happened in the first live run,
-    // and it cost real time to trace back to a token-budget problem.
-    throw new Error(
-      `Response was truncated: stop_reason=max_tokens at the current MAX_TOKENS budget (${MAX_TOKENS}). ` +
-        "Raise MAX_TOKENS rather than treating this as a JSON/prompt problem."
-    );
+    throw new TruncatedResponseError(maxTokens);
   }
 
   const textBlocks = response.content.filter((block): block is Anthropic.TextBlock => block.type === "text");
@@ -320,22 +325,45 @@ async function callClaude(system: string, user: string): Promise<string> {
 }
 
 /**
- * Runs `attempt`, retrying exactly once on any failure (network error,
- * malformed JSON, schema mismatch). On the second failure, logs and
- * returns null so the caller can skip this unit and continue.
+ * Calls Claude and parses/validates its response, retrying exactly once
+ * on any failure. If the first attempt was truncated specifically
+ * (TruncatedResponseError), the retry uses ESCALATED_MAX_TOKENS instead
+ * of repeating the same budget that just failed — there's no point
+ * retrying a token-budget problem with the same token budget. Any other
+ * failure (network error, malformed JSON, a validation error thrown by
+ * `parse`) retries once at the normal MAX_TOKENS, unchanged. On a second
+ * failure of any kind, logs and returns null so the caller can skip this
+ * unit and continue, per the locked "retry once then skip" policy.
  */
-async function withRetryOnce<T>(label: string, attempt: () => Promise<T>): Promise<T | null> {
-  try {
-    return await attempt();
-  } catch (err) {
-    console.error(`${label}: first attempt failed, retrying once.`, err);
+async function callClaudeJsonWithRetry<T>(
+  label: string,
+  system: string,
+  user: string,
+  parse: (raw: string) => T
+): Promise<T | null> {
+  let nextMaxTokens = MAX_TOKENS;
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const raw = await callClaude(system, user, nextMaxTokens);
+      return parse(raw);
+    } catch (err) {
+      if (attempt === 2) {
+        console.error(`${label}: retry also failed — skipping.`, err);
+        return null;
+      }
+      if (err instanceof TruncatedResponseError) {
+        console.warn(
+          `${label}: truncated at max_tokens=${nextMaxTokens}, retrying once with ` +
+            `max_tokens=${ESCALATED_MAX_TOKENS}.`
+        );
+        nextMaxTokens = ESCALATED_MAX_TOKENS;
+      } else {
+        console.error(`${label}: first attempt failed, retrying once.`, err);
+      }
+    }
   }
-  try {
-    return await attempt();
-  } catch (err) {
-    console.error(`${label}: retry also failed — skipping.`, err);
-    return null;
-  }
+  return null; // unreachable — satisfies TypeScript's control-flow analysis
 }
 
 function buildSystemPrompt(vendorSkills: string): string {
@@ -384,8 +412,7 @@ function buildUserPrompt(unit: GenerationUnit): string {
 }
 
 async function generateForUnit(unit: GenerationUnit, systemPrompt: string): Promise<FlowGenerationResult | null> {
-  const result = await withRetryOnce(`generateForUnit(${unit.id})`, async () => {
-    const raw = await callClaude(systemPrompt, buildUserPrompt(unit));
+  return callClaudeJsonWithRetry(`generateForUnit(${unit.id})`, systemPrompt, buildUserPrompt(unit), (raw) => {
     const parsed = JSON.parse(stripCodeFence(raw)) as {
       testCases?: ProposedTestCase[];
       ruleCandidates?: ProposedRuleCandidate[];
@@ -399,7 +426,6 @@ async function generateForUnit(unit: GenerationUnit, systemPrompt: string): Prom
       ruleCandidates: Array.isArray(parsed.ruleCandidates) ? parsed.ruleCandidates : [],
     };
   });
-  return result;
 }
 
 // ---------------------------------------------------------------------
@@ -440,8 +466,7 @@ async function synthesizeRules(
 
   const userPrompt = `Proposed rule candidates:\n\n${JSON.stringify(allCandidates, null, 2)}`;
 
-  const result = await withRetryOnce("synthesizeRules", async () => {
-    const raw = await callClaude(synthesisSystemPrompt, userPrompt);
+  const result = await callClaudeJsonWithRetry("synthesizeRules", synthesisSystemPrompt, userPrompt, (raw) => {
     const parsed = JSON.parse(stripCodeFence(raw)) as {
       canonicalRules?: ProposedRuleCandidate[];
       renameMap?: Record<string, string>;
