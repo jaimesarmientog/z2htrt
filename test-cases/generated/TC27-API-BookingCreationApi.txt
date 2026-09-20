@@ -1,0 +1,17 @@
+// Create a booking with a fully populated valid payload succeeds and echoes submitted data
+save text starting from next line and ending with [END]
+{
+  "firstname": "James",
+  "lastname": "Brown",
+  "totalprice": 150,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2024-01-01",
+    "checkout": "2024-01-05"
+  },
+  "additionalneeds": "Breakfast"
+}
+[END] as "body"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.bookingid" and save it as "bookingId" and get "$.booking.firstname" and save it as "createdFirstname" and get "$.booking.lastname" and save it as "createdLastname" and then check that http code is 200
+check that stored value "createdFirstname" itself contains "James"
+check that stored value "createdLastname" itself contains "Brown"

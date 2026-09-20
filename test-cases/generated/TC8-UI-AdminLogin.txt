@@ -1,0 +1,5 @@
+// Admin login page - Username, Password, and Login controls are present on load
+open url "https://automationintesting.online/admin"
+check that page contains "Username"
+check that page contains "Password"
+check that page contains "Login"

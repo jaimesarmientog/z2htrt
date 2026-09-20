@@ -1,0 +1,17 @@
+// Reject an update request with no auth token cookie present
+// Reject an update request with no auth token cookie present
+save text starting from next line and ending with [END]
+{
+  "firstname": "James",
+  "lastname": "Brown",
+  "totalprice": 111,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2024-01-01",
+    "checkout": "2024-01-05"
+  },
+  "additionalneeds": "Breakfast"
+}
+[END] as "updateBody"
+call api put "https://restful-booker.herokuapp.com/booking/999999" with headers "Content-Type:application/json" and body with parameters ${updateBody} and get "$" and save it as "unauthResponse" and then check that http code is 403
+check that stored value "unauthResponse" itself contains "Forbidden"

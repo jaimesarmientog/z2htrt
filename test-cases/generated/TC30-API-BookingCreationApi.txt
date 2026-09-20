@@ -1,0 +1,16 @@
+// Create a booking with special/unicode characters in firstname and lastname succeeds and echoes them exactly
+save text starting from next line and ending with [END]
+{
+  "firstname": "José-Émilie",
+  "lastname": "O'Brien-Müller",
+  "totalprice": 99,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2024-03-01",
+    "checkout": "2024-03-03"
+  }
+}
+[END] as "body"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.booking.firstname" and save it as "createdFirstname" and get "$.booking.lastname" and save it as "createdLastname" and then check that http code is 200
+check that stored value "createdFirstname" itself contains "José-Émilie"
+check that stored value "createdLastname" itself contains "O'Brien-Müller"

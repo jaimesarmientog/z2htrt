@@ -1,0 +1,30 @@
+// Reject an update request that carries an invalid auth token value
+// Reject an update request that carries an invalid auth token value
+save text starting from next line and ending with [END]
+{
+  "firstname": "Carl",
+  "lastname": "Jones",
+  "totalprice": 90,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2024-04-01",
+    "checkout": "2024-04-05"
+  },
+  "additionalneeds": "None"
+}
+[END] as "createBody"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${createBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
+save text starting from next line and ending with [END]
+{
+  "firstname": "Carl",
+  "lastname": "Jones",
+  "totalprice": 120,
+  "depositpaid": false,
+  "bookingdates": {
+    "checkin": "2024-04-10",
+    "checkout": "2024-04-15"
+  },
+  "additionalneeds": "None"
+}
+[END] as "updateBody"
+call api put from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers "Content-Type:application/json" and "Cookie:token=invalidtoken123" and body with parameters ${updateBody} and get "$" and save it as "invalidTokenResponse" and then check that http code is 403
