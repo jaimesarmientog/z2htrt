@@ -11,6 +11,7 @@
   "build": "tsc -p tsconfig.json",
   "crawl": "tsx src/crawl.ts",
   "generate": "tsx src/generate.ts",
+  "refine": "tsx src/refine.ts",
   "push-and-run": "tsx src/push-and-run.ts",
   "smoke-test": "testrigor test-suite run --test-cases-path \"test-cases/**/*.txt\" --junit-report-save-path ./report.xml --verbose",
   "lint": "tsc --noEmit"

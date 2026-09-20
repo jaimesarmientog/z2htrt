@@ -1,10 +1,16 @@
 name: Push and Run TestRigor Suite
 
 # Job 2 of the companion repo pipeline.
-# Runs only after test cases have been generated (Job 1) and approved via PR review.
-# Trigger: merge to main (i.e. push to main after the PR gate has passed).
+# Runs only after test cases have been generated AND refined (rules
+# extracted, base URLs parameterized) and approved via PR review.
+# Trigger: pull_request closed+merged, filtered to only PRs whose head
+# branch matches the refinement PR's naming convention — this is the
+# change from the original push:branches:[main] trigger, which would
+# otherwise also fire prematurely on the raw generation PR's merge,
+# pushing unrefined test cases to the suite before Job 3 ever runs.
 on:
-  push:
+  pull_request:
+    types: [closed]
     branches:
       - main
 
@@ -18,11 +24,24 @@ env:
 jobs:
   push-and-run:
     name: Push test cases and trigger async run
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'refined-tests/')
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: main
+
+      # Computed explicitly from the checked-out main branch rather than
+      # trusting github.sha/github.ref_name — under this pull_request
+      # trigger those refer to the PR branch's head commit and a
+      # PR-numbered ref (e.g. "123/merge"), not the resulting commit on
+      # main. The CLI's --branch/--commit flags below should tag the run
+      # with the real main-branch state, not the PR's own ref.
+      - name: Compute main branch info
+        id: vars
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       # 🔍 REVIEW: Node 20 chosen as current LTS; CLI only requires >=18.
       - name: Set up Node.js
@@ -35,10 +54,10 @@ jobs:
       - name: Install TestRigor CLI
         run: npm install -g @testrigor/testrigor-cli@0.0.51-beta
 
-      # Paths match generate.ts's actual output structure:
+      # Paths match generate.ts/refine.ts's actual output structure:
       #   test-cases/<title>.txt   - plain steps
       #   test-cases/<title>.yaml  - same, plus labels/dataset/UUID when needed
-      #   rules/<name>.txt         - reusable rules (.txt only, per generate.ts)
+      #   rules/<name>.txt         - reusable rules (.txt only)
       # Patterns are quoted so the CLI's own glob resolution handles `**` and
       # `{yaml,txt}` expansion, rather than bash.
       - name: Push test cases and trigger run (async)
@@ -51,8 +70,8 @@ jobs:
             --test-cases-path 'test-cases/**/*.{yaml,txt}' \
             --rules-path 'rules/**/*.txt' \
             --explicit-mutations \
-            --branch "${{ github.ref_name }}" \
-            --commit "${{ github.sha }}" \
+            --branch "main" \
+            --commit "${{ steps.vars.outputs.sha }}" \
             --async
 
       # The CLI prints a details URL (…/test-suites/<id>/runs/<taskId>) as part

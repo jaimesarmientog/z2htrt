@@ -1,21 +1,25 @@
 /**
  * generate.ts — takes tmp/inventory.json (written by crawl.ts) and asks
- * Claude to propose real testRigor test cases + reusable rules, written
- * to test-cases/generated/ and rules/generated/.
+ * Claude to propose real testRigor test cases, written to
+ * test-cases/generated/.
  *
  * Architecture (locked across design discussion — see project memory):
  * - One Claude call per "flow" (2 web flows + 4 API endpoints = 6 calls),
  *   never one big call covering everything.
- * - Each call may propose local rule candidates alongside its test
- *   cases. A final, separate synthesis call only dedupes/merges rule
- *   candidates across flows (e.g. PUT's and DELETE's independently
- *   proposed "get admin token" rules) — it never rewrites test case
- *   bodies. generate.ts applies the resulting name mapping itself via
- *   plain string substitution.
- * - One output file per test case. Output directories are wiped and
- *   rewritten wholesale on every run (no diffing against prior output).
+ * - Test cases are flat: no reusable rules and no parameterization are
+ *   proposed here. That used to happen at this stage (each flow guessing
+ *   independently, then a synthesis call reconciling duplicates across
+ *   flows), but per-flow calls have no visibility into each other, which
+ *   is exactly why that reconciliation step was needed in the first
+ *   place. Both concerns are handled properly, post-approval, by
+ *   refine.ts — which runs after this PR merges and has full visibility
+ *   across every test case in test-cases/generated/ at once.
+ * - One output file per test case. The output directory is wiped and
+ *   rewritten wholesale every time this script runs (not on every
+ *   pipeline step — only when generate.ts itself executes).
  * - On a malformed/failed Claude response: retry once, then skip that
- *   unit, log it, and continue with the rest.
+ *   unit, log it, and continue with the rest. If literally everything
+ *   fails, fail the job loudly instead of exiting 0 with nothing written.
  *
  * ⚠️ REVIEW: crawl.ts and generate.ts currently duplicate the inventory
  * shape as hand-written interfaces. If the two ever drift, generate.ts
@@ -26,6 +30,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { CONFIRMED_SYNTAX_NOTES } from "./testrigor-syntax.js";
 
 // ---------------------------------------------------------------------
 // Config
@@ -47,11 +52,6 @@ const ESCALATED_MAX_TOKENS = 64000;
 
 const INVENTORY_PATH = path.join(process.cwd(), "tmp", "inventory.json");
 const TEST_CASES_DIR = path.join(process.cwd(), "test-cases", "generated");
-// ⚠️ REVIEW: rules/generated mirrors test-cases/generated for
-// consistency, but the exact directory the testRigor CLI expects for
-// rules (push-and-run.yml's flags) hasn't been independently confirmed
-// in this session — check the CLI invocation before the first real push.
-const RULES_DIR = path.join(process.cwd(), "rules", "generated");
 const VENDOR_SKILLS_DIR = path.join(process.cwd(), "vendor", "testrigor-skills");
 
 // ⚠️ REVIEW: arbitrary caps to keep prompts affordable. If generated
@@ -223,47 +223,6 @@ async function readVendorSkills(): Promise<string> {
     : combined;
 }
 
-// Syntax verified directly against testRigor's official documentation
-// during this project (not relied on from training data). Kept here as
-// a guaranteed baseline even if the vendored skills directory is
-// missing or incomplete in a given environment.
-const CONFIRMED_SYNTAX_NOTES = `
-# Confirmed testRigor syntax (verified against official documentation)
-
-- Comments start with \`//\`. The first comment line of a test case file
-  is its human-readable description and must be preserved as the file
-  header exactly as written.
-- Reusable rules are defined once (name + steps) and invoked elsewhere
-  by writing the rule's name as a bare line, e.g. a rule named
-  \`go to checkout page\` is invoked with the line \`go to checkout page\`.
-  Rules can take dynamic parameters via quoted tokens in the rule's own
-  name, bound inside the rule body with \`stored value "paramName"\`.
-- Case-sensitive element matching: \`click exactly "Book now"\`.
-- Retry-wait synchronization pattern:
-  \`wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"\`
-- API calls:
-  \`call api <method> "<url>" with headers "a:b" and "c:d" and body "..." and get "$.jsonPath" and save it as "varName" and then check that http code is 200\`
-  All HTTP verbs are supported: get, post, put, patch, head, delete, options, trace.
-  Variable interpolation ("parameters"): ANY quoted string argument that
-  contains a \${varName} placeholder must be explicitly marked with
-  "with parameters" right before that argument, per argument — this is
-  not automatic just because \${} appears in a string. Confirmed forms:
-  \`check that page contains string with parameters "My name is \${myName}"\`
-  \`call api put "https://example.com/booking" with headers with parameters "Cookie:token=\${authToken}" and body "..."\`
-  Each argument that needs interpolation gets its own "with parameters"
-  marker; arguments without \${} in them are written normally, unmarked.
-- Reusable rule naming convention: every rule name MUST be prefixed
-  with "RR - " (e.g. "RR - Navigate to user profile",
-  "RR - Authenticate as admin via API"). This prefix is part of the
-  rule's actual name — it must appear both in the rule definition and
-  in every bare-line invocation of that rule, exactly matching.
-- Golden rules: one action per line; quote everything the user/tester
-  reads; assert (check) often, not just at the very end; prefer
-  built-in reusable rules over repeating steps; use variables/stored
-  values instead of hard-coded data; never hard-code the app's base
-  URL inline in a step if it can be avoided.
-`.trim();
-
 // ---------------------------------------------------------------------
 // Claude call plumbing
 // ---------------------------------------------------------------------
@@ -273,15 +232,9 @@ interface ProposedTestCase {
   steps: string[];
 }
 
-interface ProposedRuleCandidate {
-  name: string;
-  steps: string[];
-}
-
 interface FlowGenerationResult {
   unit: GenerationUnit;
   testCases: ProposedTestCase[];
-  ruleCandidates: ProposedRuleCandidate[];
 }
 
 /**
@@ -368,27 +321,27 @@ async function callClaudeJsonWithRetry<T>(
 
 function buildSystemPrompt(vendorSkills: string): string {
   return [
-    "You are proposing testRigor test cases and reusable rules for the Restful-Booker Platform " +
-      "(web UI at automationintesting.online, API at restful-booker.herokuapp.com). You are grounded " +
-      "ONLY in the syntax references given below and the real, observed application behavior given in " +
-      "the user message — never invent testRigor syntax that isn't shown here.",
+    "You are proposing testRigor test cases for the Restful-Booker Platform (web UI at " +
+      "automationintesting.online, API at restful-booker.herokuapp.com). You are grounded ONLY in " +
+      "the syntax references given below and the real, observed application behavior given in the " +
+      "user message — never invent testRigor syntax that isn't shown here.",
     CONFIRMED_SYNTAX_NOTES,
     vendorSkills ? `# Vendored testRigor skill documentation\n\n${vendorSkills}` : "",
     "# Your task\n" +
       "Given one flow's observed data, propose as many happy-path, negative, and edge-case test " +
       "cases as you judge genuinely warranted — there is no fixed count to hit. Ground every " +
-      'assertion in the observedValidation/observedProbes data given to you; never invent expected ' +
-      "text or status codes that weren't actually observed. If you notice a step sequence that " +
-      "would clearly be reused across the test cases you're proposing in THIS call, factor it out " +
-      'as a rule candidate instead of repeating it inline. Every rule candidate\'s "name" MUST be ' +
-      'prefixed with "RR - " (e.g. "RR - Navigate to user profile"), and any step that invokes a ' +
-      "rule must reference that exact prefixed name.\n\n" +
+      "assertion in the observedValidation/observedProbes data given to you; never invent expected " +
+      "text or status codes that weren't actually observed. Write every test case flat and " +
+      "self-contained: inline every step directly, including any setup steps another endpoint's " +
+      "test cases might also need (e.g. authenticating to get a token). Do NOT invent or reference " +
+      "a reusable rule, and do NOT try to parameterize repeated literals (like the app's base URL) " +
+      "yourself — a separate automated pass reviews every test case across all flows together once " +
+      "they're approved, and extracts genuine repetition into reusable rules and suite parameters at " +
+      "that point, with full visibility this single-flow call doesn't have. Proposing rules or " +
+      "parameters here would only guess at what's actually repeated elsewhere.\n\n" +
       "Respond with ONLY a single JSON object (no markdown fences, no prose before or after) of " +
       "this exact shape:\n" +
-      '{\n  "testCases": [ { "description": string, "steps": string[] } ],\n' +
-      '  "ruleCandidates": [ { "name": string, "steps": string[] } ]\n}\n' +
-      'Each test case\'s "steps" array should reference a rule candidate by its exact "name" as a ' +
-      "bare step where appropriate, rather than repeating that rule's steps inline.",
+      '{\n  "testCases": [ { "description": string, "steps": string[] } ]\n}',
   ]
     .filter(Boolean)
     .join("\n\n");
@@ -399,10 +352,9 @@ function buildUserPrompt(unit: GenerationUnit): string {
     unit.kind === "UI"
       ? "This is a web UI flow. Steps should be element-interaction based (click/enter/check that page contains …)."
       : "This is an API flow. Steps should use the `call api …` syntax shown in the syntax notes. If this " +
-        "endpoint requires auth (authRequired: true), assume a reusable rule that authenticates and stores " +
-        "a token already exists or will exist — reference it by a clearly-named bare step (e.g. " +
-        '"RR - Authenticate as admin via API") rather than inlining the POST /auth call yourself, and ' +
-        "propose that authentication step as a rule candidate, using the required \"RR - \" name prefix.";
+        "endpoint requires auth (authRequired: true), inline the full authentication sequence directly in " +
+        "each test case that needs it (call POST /auth, extract the token, then use it) — do not assume a " +
+        "shared rule exists for this.";
 
   return [
     kindNote,
@@ -413,112 +365,11 @@ function buildUserPrompt(unit: GenerationUnit): string {
 
 async function generateForUnit(unit: GenerationUnit, systemPrompt: string): Promise<FlowGenerationResult | null> {
   return callClaudeJsonWithRetry(`generateForUnit(${unit.id})`, systemPrompt, buildUserPrompt(unit), (raw) => {
-    const parsed = JSON.parse(stripCodeFence(raw)) as {
-      testCases?: ProposedTestCase[];
-      ruleCandidates?: ProposedRuleCandidate[];
-    };
+    const parsed = JSON.parse(stripCodeFence(raw)) as { testCases?: ProposedTestCase[] };
     if (!Array.isArray(parsed.testCases)) {
       throw new Error("response JSON missing a testCases array");
     }
-    return {
-      unit,
-      testCases: parsed.testCases,
-      ruleCandidates: Array.isArray(parsed.ruleCandidates) ? parsed.ruleCandidates : [],
-    };
-  });
-}
-
-// ---------------------------------------------------------------------
-// Rule synthesis pass
-// ---------------------------------------------------------------------
-
-interface RuleSynthesisResult {
-  canonicalRules: ProposedRuleCandidate[];
-  /** Maps "<unitId>::<originalRuleName>" -> canonical rule name. */
-  renameMap: Record<string, string>;
-}
-
-async function synthesizeRules(
-  flowResults: FlowGenerationResult[],
-  systemPrompt: string
-): Promise<RuleSynthesisResult> {
-  const allCandidates = flowResults.flatMap((result) =>
-    result.ruleCandidates.map((rule) => ({ unitId: result.unit.id, ...rule }))
-  );
-
-  if (allCandidates.length === 0) {
-    return { canonicalRules: [], renameMap: {} };
-  }
-
-  const synthesisSystemPrompt =
-    "You are deduplicating a list of proposed testRigor reusable-rule candidates gathered from " +
-    "several independent generation passes. Your ONLY job is to identify candidates that are " +
-    "semantically the same rule (e.g. two independently-named 'get an admin API token' rules) and " +
-    "merge each such group into one canonical rule (pick the clearest name and the most complete, " +
-    'correct step sequence among the group). Every canonical rule\'s "name" MUST keep the "RR - " ' +
-    "prefix (all input candidates already have it). Do not alter rules that are genuinely distinct. " +
-    "Do not invent new rules. Respond with ONLY a single JSON object, no markdown fences, of this exact " +
-    "shape:\n" +
-    '{\n  "canonicalRules": [ { "name": string, "steps": string[] } ],\n' +
-    '  "renameMap": { "<unitId>::<originalName>": "<canonicalName>" }\n}\n' +
-    'Every input candidate must appear as a key in "renameMap", even ones that were already unique ' +
-    "(in which case they map to themselves, unchanged).";
-
-  const userPrompt = `Proposed rule candidates:\n\n${JSON.stringify(allCandidates, null, 2)}`;
-
-  const result = await callClaudeJsonWithRetry("synthesizeRules", synthesisSystemPrompt, userPrompt, (raw) => {
-    const parsed = JSON.parse(stripCodeFence(raw)) as {
-      canonicalRules?: ProposedRuleCandidate[];
-      renameMap?: Record<string, string>;
-    };
-    if (!Array.isArray(parsed.canonicalRules) || typeof parsed.renameMap !== "object") {
-      throw new Error("response JSON missing canonicalRules array or renameMap object");
-    }
-    return { canonicalRules: parsed.canonicalRules, renameMap: parsed.renameMap ?? {} };
-  });
-
-  if (result) return result;
-
-  // Deterministic fallback (per locked "skip and report" failure policy):
-  // if synthesis fails twice, don't block the whole run over what is
-  // ultimately a readability optimization. Keep every candidate as its
-  // own rule, disambiguated by unit id, so nothing collides on write.
-  console.error(
-    "synthesizeRules: falling back to a no-dedup strategy — every rule candidate becomes its own " +
-      "rule file, prefixed by its originating flow. Review the PR for likely-duplicate rules."
-  );
-  const canonicalRules: ProposedRuleCandidate[] = [];
-  const renameMap: Record<string, string> = {};
-  for (const candidate of allCandidates) {
-    const fallbackName = `${candidate.unitId.replace(/[^a-zA-Z0-9]+/g, "-")}-${candidate.name}`;
-    canonicalRules.push({ name: fallbackName, steps: candidate.steps });
-    renameMap[`${candidate.unitId}::${candidate.name}`] = fallbackName;
-  }
-  return { canonicalRules, renameMap };
-}
-
-/**
- * Applies the rule-name rename map to a flow's test case steps via
- * plain string substitution — never re-invokes Claude for this. Matches
- * a step line that either equals the old rule name exactly, or starts
- * with the old rule name followed by a space (to allow for testRigor's
- * inline-conditional-on-a-rule syntax, e.g. "My Rule if page contains
- * …"). ⚠️ REVIEW: doesn't handle a rule name that happens to be a
- * prefix of an unrelated step — acceptable risk for the current small,
- * distinctly-named rule set, but worth a real-run check.
- */
-function applyRenameToSteps(steps: string[], unitId: string, renameMap: Record<string, string>): string[] {
-  return steps.map((step) => {
-    const trimmed = step.trim();
-    for (const [key, canonicalName] of Object.entries(renameMap)) {
-      const [mapUnitId, originalName] = key.split("::");
-      if (mapUnitId !== unitId) continue;
-      if (trimmed === originalName) return canonicalName;
-      if (trimmed.startsWith(`${originalName} `)) {
-        return canonicalName + trimmed.slice(originalName.length);
-      }
-    }
-    return step;
+    return { unit, testCases: parsed.testCases };
   });
 }
 
@@ -531,36 +382,21 @@ async function resetDir(dir: string): Promise<void> {
   await fs.mkdir(dir, { recursive: true });
 }
 
-function slugForFilename(text: string): string {
-  return text.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-}
-
-async function writeOutputs(flowResults: FlowGenerationResult[], synthesis: RuleSynthesisResult): Promise<void> {
+async function writeOutputs(flowResults: FlowGenerationResult[]): Promise<void> {
   await resetDir(TEST_CASES_DIR);
-  await resetDir(RULES_DIR);
 
   let testCaseCounter = 0;
 
   for (const result of flowResults) {
     for (const testCase of result.testCases) {
       testCaseCounter += 1;
-      const renamedSteps = applyRenameToSteps(testCase.steps, result.unit.id, synthesis.renameMap);
       const fileName = `TC${testCaseCounter}-${result.unit.kind}-${result.unit.featureLabel}.txt`;
-      const content = [`// ${testCase.description}`, ...renamedSteps].join("\n") + "\n";
+      const content = [`// ${testCase.description}`, ...testCase.steps].join("\n") + "\n";
       await fs.writeFile(path.join(TEST_CASES_DIR, fileName), content, "utf8");
     }
   }
 
-  for (const rule of synthesis.canonicalRules) {
-    const fileName = `${slugForFilename(rule.name)}.txt`;
-    const content = rule.steps.join("\n") + "\n";
-    await fs.writeFile(path.join(RULES_DIR, fileName), content, "utf8");
-  }
-
-  console.log(
-    `Wrote ${testCaseCounter} test case file(s) to ${TEST_CASES_DIR} and ` +
-      `${synthesis.canonicalRules.length} rule file(s) to ${RULES_DIR}.`
-  );
+  console.log(`Wrote ${testCaseCounter} test case file(s) to ${TEST_CASES_DIR}.`);
 }
 
 // ---------------------------------------------------------------------
@@ -591,9 +427,7 @@ async function main(): Promise<void> {
     }
   }
 
-  const synthesis = await synthesizeRules(flowResults, systemPrompt);
-
-  await writeOutputs(flowResults, synthesis);
+  await writeOutputs(flowResults);
 
   if (skipped.length > 0) {
     console.error(`The following units were skipped after failing twice: ${skipped.join(", ")}`);
