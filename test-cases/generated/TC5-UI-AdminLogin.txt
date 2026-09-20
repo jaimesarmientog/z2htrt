@@ -1,0 +1,6 @@
+// Admin login - whitespace-only username and password shows Invalid credentials
+open url "https://automationintesting.online/admin"
+enter "   " into "Username"
+enter "   " into "Password"
+click exactly "Login"
+check that page contains "Invalid credentials"

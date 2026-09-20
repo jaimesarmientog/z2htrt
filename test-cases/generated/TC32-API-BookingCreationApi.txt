@@ -1,0 +1,15 @@
+// Create a booking with a decimal totalprice succeeds and echoes the decimal value
+save text starting from next line and ending with [END]
+{
+  "firstname": "Decimal",
+  "lastname": "Value",
+  "totalprice": 99.99,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2024-05-01",
+    "checkout": "2024-05-05"
+  }
+}
+[END] as "body"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.booking.totalprice" and save it as "createdTotalPrice" and then check that http code is 200
+check that stored value "createdTotalPrice" itself contains "99.99"

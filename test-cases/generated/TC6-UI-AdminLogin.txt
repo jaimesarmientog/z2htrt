@@ -1,0 +1,6 @@
+// Admin login - special characters in credentials still shows Invalid credentials, not a server error
+open url "https://automationintesting.online/admin"
+enter "' OR 1=1 --" into "Username"
+enter "<script>alert(1)</script>" into "Password"
+click exactly "Login"
+check that page contains "Invalid credentials"
