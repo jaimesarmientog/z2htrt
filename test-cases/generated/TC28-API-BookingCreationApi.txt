@@ -1,16 +1,11 @@
 // Create a booking without the optional additionalneeds field still succeeds
-save text starting from next line and ending with [END]
-{
-  "firstname": "Alice",
+RR - Begin booking JSON body with firstname Alice
   "lastname": "Walker",
   "totalprice": 200,
-  "depositpaid": false,
-  "bookingdates": {
+RR - Add deposit false and start booking dates block
     "checkin": "2024-02-10",
     "checkout": "2024-02-15"
-  }
-}
-[END] as "body"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.booking.firstname" and save it as "createdFirstname" and get "$.booking.depositpaid" and save it as "createdDepositPaid" and then check that http code is 200
+RR - Finalize JSON body and save as body variable
+call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.booking.firstname" and save it as "createdFirstname" and get "$.booking.depositpaid" and save it as "createdDepositPaid" and then check that http code is 200
 check that stored value "createdFirstname" itself contains "Alice"
 check that stored value "createdDepositPaid" itself contains "false"

@@ -1,10 +1,5 @@
 // Leaving Email blank with all other fields valid shows an empty-field validation error
-open url "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
+RR - Start new booking and enter firstname
 enter "Smith" into "Lastname"
-enter "07123456789" into "Phone"
-click "Reserve Now"
+RR - Enter phone number and submit reservation
 check that page contains "must not be empty"

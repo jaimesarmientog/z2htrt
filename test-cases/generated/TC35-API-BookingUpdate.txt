@@ -1,37 +1,16 @@
 // Successfully update an existing booking omitting the optional additionalneeds field
 // Successfully update an existing booking omitting the optional additionalneeds field
-save text starting from next line and ending with [END]
-{
-  "firstname": "Anna",
-  "lastname": "Smith",
+RR - Start new JSON body block
+RR - Add firstname Anna and lastname Smith to JSON body
   "totalprice": 150,
-  "depositpaid": true,
-  "bookingdates": {
-    "checkin": "2024-03-01",
+RR - Add deposit and March checkin date to JSON body
     "checkout": "2024-03-05"
-  },
-  "additionalneeds": "Breakfast"
-}
-[END] as "createBody"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${createBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
-save text starting from next line and ending with [END]
-{
-  "username": "admin",
-  "password": "password123"
-}
-[END] as "authBody"
-call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.token" and save it as "authToken" and then check that http code is 200
-save text starting from next line and ending with [END]
-{
-  "firstname": "Anna",
-  "lastname": "Smith",
+RR - Create booking via API and authenticate via API
+RR - Add firstname Anna and lastname Smith to JSON body
   "totalprice": 175,
-  "depositpaid": false,
-  "bookingdates": {
-    "checkin": "2024-03-10",
-    "checkout": "2024-03-15"
+RR - Add deposit false and March booking dates to JSON body
   }
 }
 [END] as "updateBodyNoNeeds"
-call api put from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:token=${authToken}" and body with parameters ${updateBodyNoNeeds} and get "$.totalprice" and save it as "updatedTotalPrice" and then check that http code is 200
+call api put from the string with parameters from the string with parameters "${apiBaseUrl}/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:token=${authToken}" and body with parameters ${updateBodyNoNeeds} and get "$.totalprice" and save it as "updatedTotalPrice" and then check that http code is 200
 check that stored value "updatedTotalPrice" itself contains "175"

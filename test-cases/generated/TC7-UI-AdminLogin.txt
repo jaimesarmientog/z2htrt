@@ -1,10 +1,5 @@
 // Admin login - repeated invalid login attempts each show Invalid credentials without lockout message
-open url "https://automationintesting.online/admin"
-enter "invalid_user" into "Username"
-enter "invalid_pass" into "Password"
-click exactly "Login"
-check that page contains "Invalid credentials"
+RR - Login to admin panel with invalid credentials
 enter "another_bad_user" into "Username"
 enter "another_bad_pass" into "Password"
-click exactly "Login"
-check that page contains "Invalid credentials"
+RR - Submit admin login and verify invalid credentials error

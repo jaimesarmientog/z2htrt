@@ -1,0 +1,14 @@
+  },
+  "additionalneeds": "Breakfast"
+}
+[END] as "createBody"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${createBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
+save text starting from next line and ending with [END]
+{
+  "username": "admin",
+  "password": "password123"
+}
+[END] as "authBody"
+call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.token" and save it as "authToken" and then check that http code is 200
+save text starting from next line and ending with [END]
+{

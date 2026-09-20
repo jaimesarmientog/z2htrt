@@ -1,0 +1,5 @@
+click "Reserve Now"
+check that page does not contain "size must be between 3 and 18"
+check that page does not contain "size must be between 3 and 30"
+check that page does not contain "size must be between 11 and 21"
+check that page does not contain "must not be empty"

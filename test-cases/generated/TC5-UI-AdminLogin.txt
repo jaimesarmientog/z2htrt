@@ -1,6 +1,5 @@
 // Admin login - whitespace-only username and password shows Invalid credentials
-open url "https://automationintesting.online/admin"
+open url "${appBaseUrl}/admin"
 enter "   " into "Username"
 enter "   " into "Password"
-click exactly "Login"
-check that page contains "Invalid credentials"
+RR - Submit admin login and verify invalid credentials error

@@ -1,0 +1,4 @@
+  }
+}
+[END] as "body"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.booking.totalprice" and save it as "createdTotalPrice" and then check that http code is 200

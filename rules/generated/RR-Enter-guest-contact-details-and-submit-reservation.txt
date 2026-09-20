@@ -1,0 +1,3 @@
+enter "john.smith@example.com" into "Email"
+enter "07123456789" into "Phone"
+click "Reserve Now"

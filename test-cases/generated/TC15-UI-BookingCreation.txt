@@ -1,11 +1,5 @@
 // Leaving Phone blank with all other fields valid shows Phone-specific validation errors
-open url "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
-enter "Smith" into "Lastname"
-enter "john.smith@example.com" into "Email"
+RR - Start new booking and enter guest details
 click "Reserve Now"
 check that page contains "must not be empty"
 check that page contains "size must be between 11 and 21"

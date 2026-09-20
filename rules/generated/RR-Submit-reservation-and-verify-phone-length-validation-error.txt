@@ -1,0 +1,2 @@
+click "Reserve Now"
+check that page contains "size must be between 11 and 21"

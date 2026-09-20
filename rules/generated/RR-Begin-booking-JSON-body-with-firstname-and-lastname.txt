@@ -1,0 +1,4 @@
+save text starting from next line and ending with [END]
+{
+  "firstname": "James",
+  "lastname": "Brown",

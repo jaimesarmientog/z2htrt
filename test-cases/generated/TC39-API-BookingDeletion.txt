@@ -1,25 +1,7 @@
 // Delete a freshly created booking with a valid auth token returns 201
 // Delete a freshly created booking with a valid auth token returns 201
-save text starting from next line and ending with [END]
-{
-  "username": "admin",
-  "password": "password123"
-}
-[END] as "authBody"
-call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.token" and save it as "authToken" and then check that http code is 200
+RR - Authenticate as admin via API
 check that stored value "authToken" itself contains ""
-save text starting from next line and ending with [END]
-{
-  "firstname": "James",
-  "lastname": "Brown",
-  "totalprice": 111,
-  "depositpaid": true,
-  "bookingdates": {
-    "checkin": "2024-01-01",
-    "checkout": "2024-01-05"
-  },
-  "additionalneeds": "Breakfast"
-}
-[END] as "bookingBody"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
-call api delete from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers with parameters "Cookie:token=${authToken}" and then check that http code is 201
+RR - Build booking JSON body with breakfast
+RR - Finalize booking JSON body and create booking via API
+call api delete from the string with parameters from the string with parameters "${apiBaseUrl}/booking/${bookingId}" with headers with parameters "Cookie:token=${authToken}" and then check that http code is 201

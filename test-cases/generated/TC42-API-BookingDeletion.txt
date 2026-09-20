@@ -1,17 +1,12 @@
 // Delete request with an invalid/garbage auth token value is rejected with 403 Forbidden
 // Delete request with an invalid/garbage auth token value is rejected with 403 Forbidden
-save text starting from next line and ending with [END]
-{
+RR - Start new JSON body block
   "firstname": "Bob",
   "lastname": "Jones",
   "totalprice": 300,
-  "depositpaid": true,
-  "bookingdates": {
+RR - Add deposit true and start booking dates block
     "checkin": "2024-05-01",
     "checkout": "2024-05-04"
-  },
-  "additionalneeds": "None"
-}
-[END] as "bookingBody"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
-call api delete from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers "Cookie:token=this-is-not-a-valid-token" and then check that http code is 403
+RR - Add no additional needs and close JSON body
+RR - Finalize booking JSON body and create booking via API
+call api delete from the string with parameters from the string with parameters "${apiBaseUrl}/booking/${bookingId}" with headers "Cookie:token=this-is-not-a-valid-token" and then check that http code is 403

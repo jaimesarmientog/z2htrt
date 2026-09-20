@@ -1,0 +1,4 @@
+  "depositpaid": false,
+  "bookingdates": {
+    "checkin": "2024-03-10",
+    "checkout": "2024-03-15"

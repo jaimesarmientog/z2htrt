@@ -1,0 +1,5 @@
+}
+[END] as "createBody"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${createBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
+save text starting from next line and ending with [END]
+{

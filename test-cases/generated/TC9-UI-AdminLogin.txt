@@ -1,5 +1,5 @@
 // Admin login page - Logout button is visible before authentication and clicking it returns to the homepage
-open url "https://automationintesting.online/admin"
+open url "${appBaseUrl}/admin"
 check that page contains "Logout"
 click exactly "Logout"
-check that current url equals "https://automationintesting.online/"
+check that current url equals "${appBaseUrl}/"

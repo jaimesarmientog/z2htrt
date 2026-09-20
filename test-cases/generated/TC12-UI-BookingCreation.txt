@@ -1,11 +1,6 @@
 // Leaving Firstname blank with all other fields valid shows Firstname-specific validation errors
-open url "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+RR - Navigate to booking form and open reservation modal
 enter "Smith" into "Lastname"
-enter "john.smith@example.com" into "Email"
-enter "07123456789" into "Phone"
-click "Reserve Now"
+RR - Enter guest contact details and submit reservation
 check that page contains "Firstname should not be blank"
 check that page contains "size must be between 3 and 18"

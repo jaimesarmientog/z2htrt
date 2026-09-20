@@ -1,0 +1,4 @@
+enter "john.smith@example.com" into "Email"
+enter "07123456789" into "Phone"
+click "Reserve Now"
+check that page contains "size must be between 3 and 30"

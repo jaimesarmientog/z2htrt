@@ -1,6 +1,2 @@
 // Admin login - invalid username and password shows Invalid credentials
-open url "https://automationintesting.online/admin"
-enter "invalid_user" into "Username"
-enter "invalid_pass" into "Password"
-click exactly "Login"
-check that page contains "Invalid credentials"
+RR - Login to admin panel with invalid credentials

@@ -1,0 +1,4 @@
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2024-05-01",
+    "checkout": "2024-05-05"

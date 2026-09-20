@@ -1,15 +1,10 @@
 // Create a booking with a boundary totalprice of 0 succeeds and echoes the value
-save text starting from next line and ending with [END]
-{
+RR - Start new JSON body block
   "firstname": "Zero",
   "lastname": "Price",
   "totalprice": 0,
-  "depositpaid": false,
-  "bookingdates": {
+RR - Add deposit false and start booking dates block
     "checkin": "2024-04-01",
     "checkout": "2024-04-02"
-  }
-}
-[END] as "body"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.booking.totalprice" and save it as "createdTotalPrice" and then check that http code is 200
+RR - Finalize JSON body and create booking via API get total price
 check that stored value "createdTotalPrice" itself contains "0"
