@@ -1,0 +1,34 @@
+save text with parameters starting from next line and ending with [END]
+{
+  "username": "${username}",
+  "password": "${password}"
+}
+[END] as "authBody"
+call api post from the string with parameters "${apiBaseUrl}/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.token" and save it as "authToken" and then check that http code is 200
+save text with parameters starting from next line and ending with [END]
+{
+  "firstname": "${firstname2}",
+  "lastname": "${lastname2}",
+  "totalprice": 111,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "${checkin}",
+    "checkout": "${checkout}"
+  },
+  "additionalneeds": "${additionalneeds}"
+}
+[END] as "createBookingBody"
+call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body with parameters ${createBookingBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
+save text with parameters starting from next line and ending with [END]
+{
+  "firstname": "${firstname}",
+  "lastname": "${lastname3}",
+  "totalprice": 222,
+  "depositpaid": false,
+  "bookingdates": {
+    "checkin": "${checkin2}",
+    "checkout": "${checkout2}"
+  },
+  "additionalneeds": "${additionalneeds3}"
+}
+[END] as "updateBookingBody"

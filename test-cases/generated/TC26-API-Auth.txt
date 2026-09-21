@@ -1,9 +1,9 @@
 // // Verify POST /auth returns 200 with 'Bad credentials' reason when password is correct but username is wrong
-save text starting from next line and ending with [END]
+save text with parameters starting from next line and ending with [END]
 {
-  "username": "invalid_user",
-  "password": "password123"
+  "username": "${username2}",
+  "password": "${password}"
 }
 [END] as "authBody"
-call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.reason" and save it as "reasonValue" and then check that http code is 200
+call api post from the string with parameters "${apiBaseUrl}/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.reason" and save it as "reasonValue" and then check that http code is 200
 check that stored value "reasonValue" equals "Bad credentials"

@@ -1,12 +1,5 @@
 // Firstname shorter than the minimum allowed length triggers the Firstname size validation message
-open url "https://automationintesting.online"
-click exactly "Book now"
-wait 1 sec up to 10 times until page contains "Reserve Now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+RR - Navigate to booking reservation form
 enter "Al" into "Firstname"
-enter "Johnson" into "Lastname"
-enter "alice.johnson@example.com" into "Email"
-enter "07123456789" into "Phone"
-click "Reserve Now"
+RR - Enter last name, email, and phone then reserve
 check that page contains "size must be between 3 and 30"

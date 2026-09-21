@@ -1,5 +1,5 @@
 // // Submitting the Admin Login form with only the username filled in shows the same Invalid credentials error
-open url "https://automationintesting.online/admin"
-enter "invalid_user" into "Username"
+open url from string with parameters "${appBaseUrl}/admin"
+enter stored value "username2" into "Username"
 click "Login"
 check that page contains "Invalid credentials"

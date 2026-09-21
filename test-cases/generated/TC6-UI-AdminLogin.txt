@@ -1,5 +1,5 @@
 // // Submitting the Admin Login form with whitespace-only values in both fields shows the Invalid credentials error
-open url "https://automationintesting.online/admin"
+open url from string with parameters "${appBaseUrl}/admin"
 enter " " into "Username"
 enter " " into "Password"
 click "Login"

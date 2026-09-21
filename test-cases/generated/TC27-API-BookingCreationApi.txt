@@ -1,15 +1,15 @@
 // POST /booking - creating a booking with full valid data (all fields including optional additionalneeds) returns 200 and a bookingid
-save text starting from next line and ending with [END]
+save text with parameters starting from next line and ending with [END]
 {
-  "firstname": "James",
-  "lastname": "Brown",
+  "firstname": "${firstname}",
+  "lastname": "${lastname2}",
   "totalprice": 111,
   "depositpaid": true,
   "bookingdates": {
-    "checkin": "2024-01-01",
-    "checkout": "2024-01-05"
+    "checkin": "${checkin}",
+    "checkout": "${checkout}"
   },
-  "additionalneeds": "Breakfast"
+  "additionalneeds": "${additionalneeds}"
 }
 [END] as "body"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and "Accept:application/json" and body with parameters ${body} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
+call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and "Accept:application/json" and body with parameters ${body} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200

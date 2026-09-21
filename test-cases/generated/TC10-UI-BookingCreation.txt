@@ -1,13 +1,6 @@
 // Successful booking creation with valid Firstname, Lastname, Email and Phone shows no validation errors
-open url "https://automationintesting.online"
-click exactly "Book now"
-wait 1 sec up to 10 times until page contains "Reserve Now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "Alice" into "Firstname"
-enter "Johnson" into "Lastname"
-enter "alice.johnson@example.com" into "Email"
-enter "07123456789" into "Phone"
+RR - Start booking and enter first name, last name, and email
+enter stored value "phone" into "Phone"
 click "Reserve Now"
 check that page does not contain "must not be empty"
 check that page does not contain "Firstname should not be blank"

@@ -1,15 +1,15 @@
 // PUT /booking/{id} - request with no Cookie/token header is rejected with 403 Forbidden
-save text starting from next line and ending with [END]
+save text with parameters starting from next line and ending with [END]
 {
-  "firstname": "Jim",
-  "lastname": "Brown",
+  "firstname": "${firstname2}",
+  "lastname": "${lastname2}",
   "totalprice": 111,
   "depositpaid": true,
   "bookingdates": {
-    "checkin": "2024-01-01",
-    "checkout": "2024-01-05"
+    "checkin": "${checkin}",
+    "checkout": "${checkout}"
   },
-  "additionalneeds": "Breakfast"
+  "additionalneeds": "${additionalneeds}"
 }
 [END] as "bookingBody"
-call api put "https://restful-booker.herokuapp.com/booking/999999" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and then check that http code is 403
+call api put from the string with parameters "${apiBaseUrl}/booking/999999" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and then check that http code is 403

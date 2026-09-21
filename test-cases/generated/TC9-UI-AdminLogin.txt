@@ -1,10 +1,6 @@
 // // Repeated invalid login attempts each consistently show the Invalid credentials error rather than locking out or changing message
-open url "https://automationintesting.online/admin"
-enter "invalid_user" into "Username"
-enter "invalid_pass" into "Password"
-click "Login"
+RR - Attempt admin login with invalid credentials
 check that page contains "Invalid credentials"
-enter "invalid_user" into "Username"
-enter "invalid_pass" into "Password"
-click "Login"
+enter stored value "username2" into "Username"
+RR - Enter password and submit login
 check that page contains "Invalid credentials"

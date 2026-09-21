@@ -1,5 +1,4 @@
 // // Submitting the Admin Login form with only the password filled in shows the same Invalid credentials error
-open url "https://automationintesting.online/admin"
-enter "invalid_pass" into "Password"
-click "Login"
+open url from string with parameters "${appBaseUrl}/admin"
+RR - Enter password and submit login
 check that page contains "Invalid credentials"
