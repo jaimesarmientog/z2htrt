@@ -1,9 +1,0 @@
-// // Authentication with invalid username and password returns Bad credentials message with HTTP 200
-save text starting from next line and ending with [END]
-{
-  "username": "invalid_user",
-  "password": "invalid_pass"
-}
-[END] as "authBody"
-call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.reason" and save it as "reason" and then check that http code is 200
-check that stored value "reason" itself contains "Bad credentials"

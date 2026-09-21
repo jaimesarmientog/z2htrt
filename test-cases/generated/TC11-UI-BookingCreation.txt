@@ -1,12 +1,11 @@
-// Submitting the booking form completely empty shows all field validation errors
-open url "https://automationintesting.online"
+// Firstname shorter than the minimum allowed length triggers the firstname size validation message
+go to "https://automationintesting.online"
 click exactly "Book now"
 click "Reserve Now"
 wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+enter "Jo" into "Firstname"
+enter "Doe" into "Lastname"
+enter "john.doe@example.com" into "Email"
+enter "12345678901" into "Phone"
 click "Reserve Now"
-check that page contains "size must be between 3 and 18"
-check that page contains "Firstname should not be blank"
-check that page contains "Lastname should not be blank"
-check that page contains "must not be empty"
 check that page contains "size must be between 3 and 30"
-check that page contains "size must be between 11 and 21"

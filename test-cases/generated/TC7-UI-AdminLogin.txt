@@ -1,10 +1,6 @@
-// Admin login - repeated invalid login attempts each show Invalid credentials without lockout message
+// Admin Login - Logout button is visible on the login page before any authentication has occurred
+// Admin Login - Logout button is visible on the login page before any authentication has occurred
 open url "https://automationintesting.online/admin"
-enter "invalid_user" into "Username"
-enter "invalid_pass" into "Password"
-click exactly "Login"
-check that page contains "Invalid credentials"
-enter "another_bad_user" into "Username"
-enter "another_bad_pass" into "Password"
-click exactly "Login"
-check that page contains "Invalid credentials"
+check that page contains "Username"
+check that page contains "Password"
+check that page contains exactly "Logout"
