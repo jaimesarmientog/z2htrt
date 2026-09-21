@@ -583,7 +583,9 @@ function findQuotedArgumentContaining(step: string, literal: string): { fullMatc
 /**
  * Parameterizes known base URLs, choosing the correct confirmed syntax
  * per command rather than one generic substitution:
- * - `open url`: whole-value -> `open url stored value "paramName"`;
+ * - `open url`: whole-value -> `open url from stored value "paramName"`
+ *   (confirmed general pattern for most commands, though `enter` is a
+ *   confirmed exception that omits "from" — see CONFIRMED_SYNTAX_NOTES);
  *   composite (URL + path) -> `open url from string with parameters
  *   "..."` (no "the" — confirmed to differ from enter/call api).
  * - `call api <method>`: always the composite form (`from the string
@@ -616,7 +618,7 @@ export function parameterizeBaseUrls(containers: StepContainer[]): TestDataNeede
 
         if (/^open url\b/.test(updated)) {
           updated = isWholeValue
-            ? updated.replace(found.fullMatch, `stored value "${paramName}"`)
+            ? updated.replace(found.fullMatch, `from stored value "${paramName}"`)
             : updated.replace(found.fullMatch, `"${placeholderContent}"`).replace(/^open url /, "open url from string with parameters ");
         } else if (/^call api \w+ /.test(updated)) {
           updated = updated

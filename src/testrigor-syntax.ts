@@ -33,11 +33,19 @@ export const CONFIRMED_SYNTAX_NOTES = `
   everything:
   1. WHOLE-VALUE substitution — use when a step's ENTIRE argument is
      exactly one previously stored/saved value, with no other literal
-     text mixed in. Written as \`stored value "varName"\`, with NO \${}
-     and NO "with parameters" anywhere. Confirmed examples:
-     \`enter stored value "username" into "username_field"\`
-     \`open url stored value "testSuiteRunExecutionUrl"\`
-     \`check that stored value "createdName" itself contains "James"\`
+     text mixed in. The general pattern, confirmed across MANY commands
+     in the official docs, is \`from stored value "varName"\`:
+     \`open url from stored value "testSuiteRunExecutionUrl"\`
+     \`upload file from stored value "file.txt"\`
+     \`send sms from stored value "allocatedNumber" to stored value "answerPhoneNumber"\`
+     \`check that page contains text from stored value "expectedText"\`
+     ⚠️ \`enter\` is a confirmed EXCEPTION to this general pattern — it
+     omits "from": \`enter stored value "username" into "username_field"\`
+     (multiple identical confirmed examples, not a one-off). Do not
+     generalize \`enter\`'s missing "from" to other commands, and do not
+     drop "from" elsewhere just because \`enter\` doesn't use it.
+     NO \${} and NO "with parameters" anywhere in this whole-value form,
+     regardless of command.
   2. COMPOSITE templating — use ONLY when a stored value is being
      COMBINED with other literal text inside the same argument (e.g.
      a base URL concatenated with a path). Written with \${varName}
