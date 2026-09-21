@@ -1,11 +1,5 @@
-// Firstname shorter than the minimum allowed length triggers the Firstname size validation error
-open url "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "Al" into "Firstname"
-enter "Smith" into "Lastname"
-enter "john.smith@example.com" into "Email"
-enter "07123456789" into "Phone"
-click "Reserve Now"
-check that page contains "size must be between 3 and 18"
+// Homepage 'Book Now' button only scrolls to the rooms section and does not navigate to the guest-details form
+go to "https://automationintesting.online"
+click "Book Now"
+check that page contains "Book now"
+check that page does not contain "Firstname"

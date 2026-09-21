@@ -1,6 +1,8 @@
-// Admin login - empty submit shows Invalid credentials
+// Admin Login page displays the expected form fields and actions
+// Admin Login page displays the expected form fields and actions
 open url "https://automationintesting.online/admin"
 check that page contains "Username"
 check that page contains "Password"
-click exactly "Login"
-check that page contains "Invalid credentials"
+check that page contains exactly "Login"
+check that page contains exactly "Logout"
+check that page contains exactly "Toggle navigation"

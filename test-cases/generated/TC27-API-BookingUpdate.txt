@@ -1,0 +1,38 @@
+// Successfully update an existing booking with a valid auth token and full booking payload
+// Successfully update an existing booking with a valid auth token and full booking payload
+save text starting from next line and ending with [END]
+{
+  "username": "admin",
+  "password": "password123"
+}
+[END] as "authBody"
+call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.token" and save it as "authToken" and then check that http code is 200
+save text starting from next line and ending with [END]
+{
+  "firstname": "James",
+  "lastname": "Brown",
+  "totalprice": 111,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2025-01-01",
+    "checkout": "2025-01-05"
+  },
+  "additionalneeds": "Breakfast"
+}
+[END] as "bookingBody"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
+save text starting from next line and ending with [END]
+{
+  "firstname": "James",
+  "lastname": "Brown",
+  "totalprice": 222,
+  "depositpaid": false,
+  "bookingdates": {
+    "checkin": "2025-02-01",
+    "checkout": "2025-02-05"
+  },
+  "additionalneeds": "Lunch"
+}
+[END] as "updateBody"
+call api put from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:token=${authToken}" and body with parameters ${updateBody} and get "$.totalprice" and save it as "updatedTotalPrice" and then check that http code is 200
+check that stored value "updatedTotalPrice" itself contains "222"
