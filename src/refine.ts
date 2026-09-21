@@ -342,6 +342,20 @@ function warnIfMissingOwnAssertion(testCases: TestCaseFile[]): void {
 // Test Data candidates: base URLs, entered values, and JSON body values
 // ---------------------------------------------------------------------
 
+/**
+ * Anything with a mutable steps array — both TestCaseFile and
+ * NamedRuleWithOccurrences satisfy this shape. Parameterization (base
+ * URLs, data values) operates on this generic type so it applies
+ * uniformly to whatever survives as test-case content AND whatever got
+ * extracted into a rule — the first live run's real bug was
+ * parameterization only ever touching test cases, never rules, so
+ * anything pulled into a rule before parameterization ran kept its
+ * hardcoded literal forever.
+ */
+interface StepContainer {
+  steps: string[];
+}
+
 interface TestDataNeeded {
   name: string;
   exampleValue: string;
@@ -441,7 +455,7 @@ function isJsonBlockStep(step: string): boolean {
  * even under the same contextName (keyed by contextName + value
  * together), so this stays safe: only genuinely identical data merges.
  */
-export function findDataValueCandidates(testCases: TestCaseFile[]): DataValueCandidate[] {
+export function findDataValueCandidates(testCases: StepContainer[]): DataValueCandidate[] {
   const byKey = new Map<string, DataValueCandidate>();
 
   const record = (contextName: string, value: string, occ: DataValueOccurrence) => {
@@ -500,31 +514,32 @@ export function assignVariableNames(candidates: DataValueCandidate[]): Map<DataV
 }
 
 /**
- * Applies the enter-into and json-value replacements in place. Uses the
- * URL-argument-style interpolation for `enter` (confirmed in the
- * official docs for the multi-line form: `enter from the string with
- * parameters ...`), and marks the JSON block's own trigger line with
- * "with parameters" the first time any of its values get parameterized.
+ * Applies the enter-into and json-value replacements in place.
+ * enter-into is always a WHOLE-VALUE substitution (the entire quoted
+ * argument IS the variable, nothing else concatenated), so it uses the
+ * confirmed simple form: `enter stored value "varName" into "field"` —
+ * no ${}, no "with parameters". json-value stays on ${} interpolation
+ * since that's the only mechanism available inside a raw text block
+ * (you can't write `stored value "x"` as a JSON string value) — marks
+ * the block's trigger line with "with parameters" the first time any
+ * of its values get parameterized.
  */
 export function applyDataValueReplacements(
-  testCases: TestCaseFile[],
+  containers: StepContainer[],
   candidates: DataValueCandidate[],
   varNames: Map<DataValueCandidate, string>
 ): void {
-  // Track which (fileIndex, stepIndex) json-value steps have already
-  // had their trigger line marked "with parameters", so we don't
-  // double-mark it if multiple values in the same block get replaced.
   const markedJsonSteps = new Set<string>();
 
   for (const candidate of candidates) {
     const varName = varNames.get(candidate)!;
     for (const occ of candidate.occurrences) {
-      const step = testCases[occ.fileIndex].steps[occ.stepIndex];
+      const step = containers[occ.fileIndex].steps[occ.stepIndex];
 
       if (occ.kind === "enter-into") {
-        testCases[occ.fileIndex].steps[occ.stepIndex] = step.replace(
+        containers[occ.fileIndex].steps[occ.stepIndex] = step.replace(
           ENTER_INTO_PATTERN,
-          `enter from the string with parameters "\${${varName}}" into "$2"`
+          `enter stored value "${varName}" into "$2"`
         );
         continue;
       }
@@ -541,26 +556,78 @@ export function applyDataValueReplacements(
         lines[0] = lines[0].replace("starting from next line", "with parameters starting from next line");
         markedJsonSteps.add(fileStepKey);
       }
-      testCases[occ.fileIndex].steps[occ.stepIndex] = lines.join("\n");
+      containers[occ.fileIndex].steps[occ.stepIndex] = lines.join("\n");
     }
   }
 }
 
-export function parameterizeBaseUrls(testCases: TestCaseFile[]): TestDataNeeded[] {
+/**
+ * Finds the first quoted "..." argument in a step whose content
+ * includes the given literal. Returns the full quoted match (with
+ * quotes) and its inner content, so callers can distinguish a
+ * WHOLE-VALUE match (content === literal exactly) from a COMPOSITE one
+ * (literal glued to other text) and choose the correct confirmed
+ * syntax for each — see CONFIRMED_SYNTAX_NOTES's stored-value section.
+ */
+function findQuotedArgumentContaining(step: string, literal: string): { fullMatch: string; content: string } | null {
+  const regex = /"([^"]*)"/g;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(step))) {
+    if (match[1].includes(literal)) {
+      return { fullMatch: match[0], content: match[1] };
+    }
+  }
+  return null;
+}
+
+/**
+ * Parameterizes known base URLs, choosing the correct confirmed syntax
+ * per command rather than one generic substitution:
+ * - `open url`: whole-value -> `open url stored value "paramName"`;
+ *   composite (URL + path) -> `open url from string with parameters
+ *   "..."` (no "the" — confirmed to differ from enter/call api).
+ * - `call api <method>`: always the composite form (`from the string
+ *   with parameters`), since a whole-value "stored value" form isn't
+ *   confirmed for this command — the composite form is confirmed safe
+ *   whether or not there's a path suffix.
+ * - Any other verb context containing the literal is left untouched
+ *   and logged, rather than guessing at unconfirmed syntax — still
+ *   added to the Test Data manifest, since the variable is still
+ *   needed even if this one occurrence couldn't be safely auto-rewritten.
+ */
+export function parameterizeBaseUrls(containers: StepContainer[]): TestDataNeeded[] {
   const needed = new Map<string, TestDataNeeded>();
 
-  for (const tc of testCases) {
-    tc.steps = tc.steps.map((step) => {
+  for (const container of containers) {
+    container.steps = container.steps.map((step) => {
       let updated = step;
       for (const { literal, paramName } of KNOWN_BASE_URLS) {
         if (!updated.includes(literal)) continue;
-        needed.set(paramName, { name: paramName, exampleValue: literal });
 
-        const withPlaceholder = updated.split(literal).join(`\${${paramName}}`);
-        const callApiMatch = withPlaceholder.match(/^call api (\w+) /);
-        updated = callApiMatch
-          ? withPlaceholder.replace(/^call api (\w+) /, "call api $1 from the string with parameters ")
-          : withPlaceholder;
+        const found = findQuotedArgumentContaining(updated, literal);
+        if (!found) {
+          console.warn(`parameterizeBaseUrls: "${literal}" found outside any quoted argument, skipping: ${updated}`);
+          continue;
+        }
+
+        needed.set(paramName, { name: paramName, exampleValue: literal });
+        const isWholeValue = found.content === literal;
+        const placeholderContent = found.content.split(literal).join(`\${${paramName}}`);
+
+        if (/^open url\b/.test(updated)) {
+          updated = isWholeValue
+            ? updated.replace(found.fullMatch, `stored value "${paramName}"`)
+            : updated.replace(found.fullMatch, `"${placeholderContent}"`).replace(/^open url /, "open url from string with parameters ");
+        } else if (/^call api \w+ /.test(updated)) {
+          updated = updated
+            .replace(found.fullMatch, `"${placeholderContent}"`)
+            .replace(/^call api (\w+) /, "call api $1 from the string with parameters ");
+        } else {
+          console.warn(
+            `parameterizeBaseUrls: "${paramName}" found in an unrecognized step context, leaving unparameterized ` +
+              `(still added to the Test Data manifest): ${updated}`
+          );
+        }
       }
       return updated;
     });
@@ -646,18 +713,25 @@ async function main(): Promise<void> {
   applyExtraction(testCases, namedWithOccurrences);
   warnIfMissingOwnAssertion(testCases);
 
-  // Data-value parameterization second, on the post-extraction step
-  // arrays (rule-invocation lines don't match either detection pattern,
-  // so this ordering is safe).
-  const dataValueCandidates = findDataValueCandidates(testCases);
+  // Combined view of everything with a mutable steps array — both the
+  // leftover test-case content AND the extracted rules. This is the
+  // fix for the real bug found in the first live run: parameterization
+  // used to only ever touch testCases, so anything already pulled into
+  // a rule (like the base URL, or hardcoded credentials) kept its
+  // literal value forever. Mutating through this combined array
+  // mutates the same underlying objects writeRules/writeUpdatedTestCases
+  // write out below, since these are references, not copies.
+  const allContainers: StepContainer[] = [...testCases, ...namedWithOccurrences];
+
+  const dataValueCandidates = findDataValueCandidates(allContainers);
   const dataValueVarNames = assignVariableNames(dataValueCandidates);
-  applyDataValueReplacements(testCases, dataValueCandidates, dataValueVarNames);
+  applyDataValueReplacements(allContainers, dataValueCandidates, dataValueVarNames);
   const dataValueManifestEntries: TestDataNeeded[] = dataValueCandidates.map((c) => ({
     name: dataValueVarNames.get(c)!,
     exampleValue: c.value,
   }));
 
-  const urlManifestEntries = parameterizeBaseUrls(testCases);
+  const urlManifestEntries = parameterizeBaseUrls(allContainers);
 
   await writeRules(namedWithOccurrences);
   await writeUpdatedTestCases(testCases);

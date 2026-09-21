@@ -338,7 +338,10 @@ function buildSystemPrompt(vendorSkills: string): string {
       "yourself — a separate automated pass reviews every test case across all flows together once " +
       "they're approved, and extracts genuine repetition into reusable rules and suite parameters at " +
       "that point, with full visibility this single-flow call doesn't have. Proposing rules or " +
-      "parameters here would only guess at what's actually repeated elsewhere.\n\n" +
+      "parameters here would only guess at what's actually repeated elsewhere. The \"description\" " +
+      "field IS the file's header comment — do NOT also include it (or any restatement of it) as the " +
+      "first element of \"steps\"; that produces a duplicated comment line in the output file. " +
+      "\"steps\" should start directly with the first real action or assertion.\n\n" +
       "Respond with ONLY a single JSON object (no markdown fences, no prose before or after) of " +
       "this exact shape:\n" +
       '{\n  "testCases": [ { "description": string, "steps": string[] } ]\n}',
@@ -391,7 +394,16 @@ async function writeOutputs(flowResults: FlowGenerationResult[]): Promise<void> 
     for (const testCase of result.testCases) {
       testCaseCounter += 1;
       const fileName = `TC${testCaseCounter}-${result.unit.kind}-${result.unit.featureLabel}.txt`;
-      const content = [`// ${testCase.description}`, ...testCase.steps].join("\n") + "\n";
+      const header = `// ${testCase.description}`;
+      // Safety net: the prompt instructs Claude not to restate the
+      // description as steps[0], but instructions aren't 100% reliable
+      // — drop it deterministically if it slips through anyway, rather
+      // than relying on the prompt alone.
+      const steps =
+        testCase.steps[0]?.trim() === header.trim() || testCase.steps[0]?.trim() === testCase.description.trim()
+          ? testCase.steps.slice(1)
+          : testCase.steps;
+      const content = [header, ...steps].join("\n") + "\n";
       await fs.writeFile(path.join(TEST_CASES_DIR, fileName), content, "utf8");
     }
   }

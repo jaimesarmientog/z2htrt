@@ -12,20 +12,55 @@ export const CONFIRMED_SYNTAX_NOTES = `
 
 - Comments start with \`//\`. The first comment line of a test case file
   is its human-readable description and must be preserved as the file
-  header exactly as written.
+  header exactly as written. Do NOT also include this description (or
+  any restatement of it) as the first element of a steps array — the
+  header and the steps are two separate things; repeating it produces a
+  duplicated comment line in the output file.
+- There is NO \`go to "<url>"\` command — this does not exist in
+  testRigor and must never be used for navigation. The only place "go
+  to" appears in official examples is as part of a user-CHOSEN rule
+  NAME (e.g. a rule literally named "go to checkout page", invoked by
+  writing that exact name as a bare line) — it is not a built-in verb.
+  To navigate to a URL, always use \`open url "<url>"\`.
 - Reusable rules are defined once (name + steps) and invoked elsewhere
   by writing the rule's name as a bare line, e.g. a rule named
   \`go to checkout page\` is invoked with the line \`go to checkout page\`.
-  Rules can take dynamic parameters via quoted tokens in the rule's own
-  name, bound inside the rule body with \`stored value "paramName"\`.
 - Case-sensitive element matching: \`click exactly "Book now"\`.
 - Retry-wait synchronization pattern:
   \`wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"\`
+- STORED VALUES — two genuinely different mechanisms, both confirmed
+  from official docs. Do not conflate them or default to one for
+  everything:
+  1. WHOLE-VALUE substitution — use when a step's ENTIRE argument is
+     exactly one previously stored/saved value, with no other literal
+     text mixed in. Written as \`stored value "varName"\`, with NO \${}
+     and NO "with parameters" anywhere. Confirmed examples:
+     \`enter stored value "username" into "username_field"\`
+     \`open url stored value "testSuiteRunExecutionUrl"\`
+     \`check that stored value "createdName" itself contains "James"\`
+  2. COMPOSITE templating — use ONLY when a stored value is being
+     COMBINED with other literal text inside the same argument (e.g.
+     a base URL concatenated with a path). Written with \${varName}
+     placeholders inside a quoted string, but the modifier phrase that
+     introduces it is command-specific — confirmed to genuinely differ,
+     not a typo to normalize away:
+     - \`enter\` and \`call api <method>\`: "from THE string with
+       parameters" (the word "the" is present) — e.g.
+       \`enter from the string with parameters "\${homePrefix}/my/path" into "urlPath"\`
+       \`call api post from the string with parameters "\${homePrefix}/api/v1/create" with headers ...\`
+     - \`open url\`: "from string with parameters" (NO "the") — e.g.
+       \`open url from string with parameters "https://\${homeDomain}/cart/checkout/confirm"\`
+     - Headers (confirmed via direct domain knowledge, not the official
+       docs specifically): \`with headers with parameters "Cookie:token=\${authToken}"\`
+     - Plain assertions (confirmed via direct domain knowledge):
+       \`check that page contains string with parameters "My name is \${myName}"\`
+  Rule of thumb: if the whole argument IS the variable, use form 1
+  (stored value). If the variable is glued to other literal text, use
+  form 2 (the command-specific composite phrasing above) — never use
+  form 2 just because a value happens to come from a variable.
 - API calls:
   \`call api <method> "<url>" with headers "a:b" and "c:d" and body "..." and get "$.jsonPath" and save it as "varName" and then check that http code is 200\`
   All HTTP verbs are supported: get, post, put, patch, head, delete, options, trace.
-  A previously saved API result can be checked directly:
-  \`check that stored value "createdName" itself contains "James"\`
   For any JSON request body, NEVER write it as an escaped single-line
   string (e.g. \`body "{\\"key\\":\\"value\\"}"\`) — always save it as its own
   named step first using the multi-line block, then reference that
@@ -40,17 +75,6 @@ export const CONFIRMED_SYNTAX_NOTES = `
   reference) is not directly confirmed in the docs read so far — flag it
   for verification in the next real run rather than asserting it
   silently works.
-  Variable interpolation ("parameters") is confirmed but its exact
-  phrasing differs per argument type — do not generalize one form to
-  another:
-  - URL (confirmed from official docs): the method itself takes the
-    modifier, e.g. \`call api post from the string with parameters "\${homePrefix}/api/v1/create" with headers ...\`
-  - Inline multi-line body (confirmed from official docs): \`body from the string with parameters text starting from next line and ending with [END]\n{...}\n[END]\`
-  - Headers (confirmed via direct domain knowledge, not the docs read so
-    far): \`with headers with parameters "Cookie:token=\${authToken}"\`
-  - Plain assertions (confirmed via direct domain knowledge): \`check that page contains string with parameters "My name is \${myName}"\`
-  An argument with no \${} in it is written normally, with no "with
-  parameters"/"from the string with parameters" modifier at all.
 - Reusable rule naming convention: every rule name MUST be prefixed
   with "RR - " (e.g. "RR - Navigate to user profile",
   "RR - Authenticate as admin via API"). This prefix is part of the
