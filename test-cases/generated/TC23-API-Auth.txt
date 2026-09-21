@@ -1,10 +1,10 @@
 // Authentication with a case-mismatched username is treated as invalid and returns 200 with a Bad credentials reason
 // Authentication with a case-mismatched username is treated as invalid and returns 200 with a Bad credentials reason
-save text starting from next line and ending with [END]
+save text with parameters starting from next line and ending with [END]
 {
   "username": "invalid_USER",
-  "password": "invalid_pass"
+  "password": "${password}"
 }
 [END] as "authBody"
-call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.reason" and save it as "authReason" and then check that http code is 200
+call api post from the string with parameters "${apiBaseUrl}/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.reason" and save it as "authReason" and then check that http code is 200
 check that stored value "authReason" itself contains "Bad credentials"

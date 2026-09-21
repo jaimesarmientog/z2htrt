@@ -1,16 +1,16 @@
 // POST /booking creates a booking with only the required fields (additionalneeds omitted) and returns 200 with the echoed booking data
 // Happy path variant: additionalneeds is documented as optional in the schema; verify creation still succeeds without it
-save text starting from next line and ending with [END]
+save text with parameters starting from next line and ending with [END]
 {
   "firstname": "Sara",
   "lastname": "Smith",
   "totalprice": 200,
   "depositpaid": false,
   "bookingdates": {
-    "checkin": "2025-02-01",
+    "checkin": "${checkin}",
     "checkout": "2025-02-10"
   }
 }
 [END] as "bookingBody"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and get "$.bookingid" and save it as "bookingId" and get "$.booking.lastname" and save it as "returnedLastname" and then check that http code is 200
+call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and get "$.bookingid" and save it as "bookingId" and get "$.booking.lastname" and save it as "returnedLastname" and then check that http code is 200
 check that stored value "returnedLastname" itself contains "Smith"

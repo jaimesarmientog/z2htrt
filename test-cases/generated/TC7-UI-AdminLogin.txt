@@ -1,6 +1,6 @@
 // Admin Login - Logout button is visible on the login page before any authentication has occurred
 // Admin Login - Logout button is visible on the login page before any authentication has occurred
-open url "https://automationintesting.online/admin"
+open url "${appBaseUrl}/admin"
 check that page contains "Username"
 check that page contains "Password"
 check that page contains exactly "Logout"

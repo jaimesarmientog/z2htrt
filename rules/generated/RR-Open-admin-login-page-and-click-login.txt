@@ -1,0 +1,2 @@
+open url "https://automationintesting.online/admin"
+click exactly "Login"

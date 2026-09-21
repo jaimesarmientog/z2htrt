@@ -1,0 +1,5 @@
+go to "https://automationintesting.online"
+click exactly "Book now"
+click "Reserve Now"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+enter "John" into "Firstname"

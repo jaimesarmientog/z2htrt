@@ -1,11 +1,5 @@
 // Lastname longer than the maximum allowed length triggers the lastname size validation message
-go to "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
+RR - Navigate to booking form and enter guest first name
 enter "DoeDoeDoeDoeDoeDoeDoe" into "Lastname"
-enter "john.doe@example.com" into "Email"
-enter "12345678901" into "Phone"
-click "Reserve Now"
+RR - Enter guest email and phone and reserve now
 check that page contains "size must be between 3 and 18"

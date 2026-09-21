@@ -1,11 +1,5 @@
 // Phone number shorter than the minimum allowed length triggers the phone size validation message
-go to "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
-enter "Doe" into "Lastname"
-enter "john.doe@example.com" into "Email"
+RR - Navigate to booking form and enter guest first name, last name, and email
 enter "12345" into "Phone"
 click "Reserve Now"
 check that page contains "size must be between 11 and 21"

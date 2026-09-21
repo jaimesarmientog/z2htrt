@@ -1,4 +1,4 @@
 // Clicking a room card's lowercase 'Book now' button navigates to that room's booking page with the guest-details fields
-go to "https://automationintesting.online"
+go to "${appBaseUrl}"
 click exactly "Book now"
 check that page contains "Reserve Now"

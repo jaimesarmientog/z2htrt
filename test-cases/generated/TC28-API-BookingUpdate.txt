@@ -1,30 +1,24 @@
 // Successfully update a booking omitting the optional additionalneeds field
 // Successfully update a booking omitting the optional additionalneeds field
-save text starting from next line and ending with [END]
+RR - Authenticate as admin via API
+save text with parameters starting from next line and ending with [END]
 {
-  "username": "admin",
-  "password": "password123"
-}
-[END] as "authBody"
-call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.token" and save it as "authToken" and then check that http code is 200
-save text starting from next line and ending with [END]
-{
-  "firstname": "Sarah",
-  "lastname": "Connor",
+  "firstname": "${firstname2}",
+  "lastname": "${lastname3}",
   "totalprice": 150,
   "depositpaid": true,
   "bookingdates": {
     "checkin": "2025-03-01",
     "checkout": "2025-03-10"
   },
-  "additionalneeds": "Breakfast"
+  "additionalneeds": "${additionalneeds}"
 }
 [END] as "bookingBody"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
-save text starting from next line and ending with [END]
+call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
+save text with parameters starting from next line and ending with [END]
 {
-  "firstname": "Sarah",
-  "lastname": "Connor",
+  "firstname": "${firstname2}",
+  "lastname": "${lastname3}",
   "totalprice": 175,
   "depositpaid": false,
   "bookingdates": {
@@ -33,5 +27,5 @@ save text starting from next line and ending with [END]
   }
 }
 [END] as "updateBodyNoNeeds"
-call api put from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:token=${authToken}" and body with parameters ${updateBodyNoNeeds} and get "$.lastname" and save it as "updatedLastname" and then check that http code is 200
+call api put from the string with parameters from the string with parameters "${apiBaseUrl}/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:token=${authToken}" and body with parameters ${updateBodyNoNeeds} and get "$.lastname" and save it as "updatedLastname" and then check that http code is 200
 check that stored value "updatedLastname" itself contains "Connor"

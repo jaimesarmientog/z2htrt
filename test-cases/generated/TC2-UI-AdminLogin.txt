@@ -1,5 +1,4 @@
 // Admin Login - submitting the form with no credentials entered shows Invalid credentials
 // Admin Login - submitting the form with no credentials entered shows Invalid credentials
-open url "https://automationintesting.online/admin"
-click exactly "Login"
+RR - Open admin login page and click login
 check that page contains "Invalid credentials"

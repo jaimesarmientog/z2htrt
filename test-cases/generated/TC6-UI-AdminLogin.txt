@@ -1,9 +1,6 @@
 // Admin Login - repeated invalid submissions consistently return the same Invalid credentials message
 // Admin Login - repeated invalid submissions consistently return the same Invalid credentials message
-open url "https://automationintesting.online/admin"
-click exactly "Login"
+RR - Open admin login page and click login
 check that page contains "Invalid credentials"
-enter "invalid_user" into "Username"
-enter "invalid_pass" into "Password"
-click exactly "Login"
+RR - Enter invalid login credentials and click login
 check that page contains "Invalid credentials"

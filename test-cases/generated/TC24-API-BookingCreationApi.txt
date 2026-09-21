@@ -1,17 +1,17 @@
 // POST /booking creates a booking with a full valid payload (including optional additionalneeds) and returns 200 with the echoed booking data
 // Happy path: create a booking with all fields populated, including the optional additionalneeds field
-save text starting from next line and ending with [END]
+save text with parameters starting from next line and ending with [END]
 {
-  "firstname": "James",
-  "lastname": "Brown",
+  "firstname": "${firstname}",
+  "lastname": "${lastname2}",
   "totalprice": 111,
   "depositpaid": true,
   "bookingdates": {
     "checkin": "2025-01-01",
     "checkout": "2025-01-05"
   },
-  "additionalneeds": "Breakfast"
+  "additionalneeds": "${additionalneeds}"
 }
 [END] as "bookingBody"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and get "$.bookingid" and save it as "bookingId" and get "$.booking.firstname" and save it as "returnedFirstname" and then check that http code is 200
+call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and get "$.bookingid" and save it as "bookingId" and get "$.booking.firstname" and save it as "returnedFirstname" and then check that http code is 200
 check that stored value "returnedFirstname" itself contains "James"

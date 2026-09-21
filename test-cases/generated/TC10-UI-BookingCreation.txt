@@ -1,8 +1,5 @@
 // Submitting the guest-details form completely empty shows all field validation errors
-go to "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+RR - Navigate to booking form and wait for reservation details
 click "Reserve Now"
 check that page contains "must not be empty"
 check that page contains "Lastname should not be blank"

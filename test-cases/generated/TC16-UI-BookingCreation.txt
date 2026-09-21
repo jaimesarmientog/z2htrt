@@ -1,5 +1,5 @@
 // Homepage 'Book Now' button only scrolls to the rooms section and does not navigate to the guest-details form
-go to "https://automationintesting.online"
+go to "${appBaseUrl}"
 click "Book Now"
 check that page contains "Book now"
 check that page does not contain "Firstname"

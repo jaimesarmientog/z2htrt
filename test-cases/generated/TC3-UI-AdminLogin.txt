@@ -1,7 +1,5 @@
 // Admin Login - submitting invalid username and password shows Invalid credentials
 // Admin Login - submitting invalid username and password shows Invalid credentials
-open url "https://automationintesting.online/admin"
-enter "invalid_user" into "Username"
-enter "invalid_pass" into "Password"
-click exactly "Login"
+open url "${appBaseUrl}/admin"
+RR - Enter invalid login credentials and click login
 check that page contains "Invalid credentials"

@@ -12,5 +12,5 @@ save text starting from next line and ending with [END]
   }
 }
 [END] as "noAuthUpdateBody"
-call api put "https://restful-booker.herokuapp.com/booking/999999" with headers "Content-Type:application/json" and body with parameters ${noAuthUpdateBody} and get "$.status" and save it as "noAuthStatus" and then check that http code is 403
+call api put from the string with parameters "${apiBaseUrl}/booking/999999" with headers "Content-Type:application/json" and body with parameters ${noAuthUpdateBody} and get "$.status" and save it as "noAuthStatus" and then check that http code is 403
 check that stored value "noAuthStatus" itself contains "Forbidden"

@@ -1,6 +1,6 @@
 // Admin Login - Toggle navigation button is present and can be clicked without breaking the login form
 // Admin Login - Toggle navigation button is present and can be clicked without breaking the login form
-open url "https://automationintesting.online/admin"
+open url "${appBaseUrl}/admin"
 check that page contains exactly "Toggle navigation"
 click exactly "Toggle navigation"
 check that page contains "Username"
