@@ -1,0 +1,15 @@
+// POST /booking - edge case: creating a booking with a very large totalprice value succeeds with 200
+save text starting from next line and ending with [END]
+{
+  "firstname": "Big",
+  "lastname": "Spender",
+  "totalprice": 999999999,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2024-05-01",
+    "checkout": "2024-05-10"
+  },
+  "additionalneeds": "Luxury suite"
+}
+[END] as "body"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and "Accept:application/json" and body with parameters ${body} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200

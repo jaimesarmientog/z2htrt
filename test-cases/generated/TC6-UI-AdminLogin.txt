@@ -1,6 +1,6 @@
-// // Verify submitting whitespace-only Username and Password shows the Invalid credentials error message
+// // Submitting the Admin Login form with whitespace-only values in both fields shows the Invalid credentials error
 open url "https://automationintesting.online/admin"
-enter "   " into "Username"
-enter "   " into "Password"
+enter " " into "Username"
+enter " " into "Password"
 click "Login"
 check that page contains "Invalid credentials"
