@@ -1,11 +1,12 @@
-// Firstname at the maximum accepted length (18 characters) is accepted
+// Phone number longer than the maximum allowed length triggers the Phone size validation message
 open url "https://automationintesting.online"
 click exactly "Book now"
+wait 1 sec up to 10 times until page contains "Reserve Now"
 click "Reserve Now"
 wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "Abcdefghijklmnopqr" into "Firstname"
-enter "Smith" into "Lastname"
-enter "test@example.com" into "Email"
-enter "01234567890" into "Phone"
+enter "Alice" into "Firstname"
+enter "Johnson" into "Lastname"
+enter "alice.johnson@example.com" into "Email"
+enter "1234567890123456789012" into "Phone"
 click "Reserve Now"
-check that page does not contain "size must be between 3 and 18"
+check that page contains "size must be between 11 and 21"

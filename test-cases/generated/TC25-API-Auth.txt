@@ -1,0 +1,7 @@
+// // Verify POST /auth treats a completely empty request body the same as invalid credentials
+save text starting from next line and ending with [END]
+{
+}
+[END] as "authBody"
+call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.reason" and save it as "reasonValue" and then check that http code is 200
+check that stored value "reasonValue" equals "Bad credentials"

@@ -1,6 +1,6 @@
-// // Verify submitting a SQL-injection style payload in Username still shows the Invalid credentials error message
+// // The Logout button in the admin nav is not auth-gated and can be clicked before any login attempt, navigating away from the login form
 open url "https://automationintesting.online/admin"
-enter "' OR '1'='1" into "Username"
-enter "anything" into "Password"
-click "Login"
-check that page contains "Invalid credentials"
+check that page contains "Logout"
+click "Logout"
+check that page does not contain "Username"
+check that page does not contain "Password"

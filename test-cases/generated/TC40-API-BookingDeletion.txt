@@ -1,0 +1,2 @@
+// DELETE /booking/{id} - request with an invalid/malformed auth token is rejected with 403
+call api delete "https://restful-booker.herokuapp.com/booking/999999" with headers "Cookie:token=invalidtoken12345" and then check that http code is 403

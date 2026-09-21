@@ -1,0 +1,23 @@
+// DELETE /booking/{id} - successfully deletes a booking created via API when a valid auth token is supplied, returning 201
+save text starting from next line and ending with [END] as "authBody"
+{
+  "username": "admin",
+  "password": "password123"
+}
+[END]
+call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.token" and save it as "authToken" and then check that http code is 200
+save text starting from next line and ending with [END] as "bookingBody"
+{
+  "firstname": "John",
+  "lastname": "Smith",
+  "totalprice": 111,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2024-01-01",
+    "checkout": "2024-01-05"
+  },
+  "additionalneeds": "Breakfast"
+}
+[END]
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
+call api delete from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers with parameters "Cookie:token=${authToken}" and then check that http code is 201

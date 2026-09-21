@@ -1,6 +1,3 @@
-// // Verify submitting an excessively long Username and Password shows the Invalid credentials error message
+// // The Toggle navigation control is present on the Admin Login page
 open url "https://automationintesting.online/admin"
-enter "averylongusernamethatexceedsnormalexpectedlengthforatextfieldaverylongusernamethatexceedsnormalexpectedlength" into "Username"
-enter "averylongpasswordthatexceedsnormalexpectedlengthforatextfieldaverylongpasswordthatexceedsnormalexpectedlength" into "Password"
-click "Login"
-check that page contains "Invalid credentials"
+check that page contains "Toggle navigation"

@@ -1,5 +1,5 @@
-// // Verify submitting the login form with only Username filled in shows the Invalid credentials error message
+// // Submitting the Admin Login form with only the username filled in shows the same Invalid credentials error
 open url "https://automationintesting.online/admin"
-enter "someuser" into "Username"
+enter "invalid_user" into "Username"
 click "Login"
 check that page contains "Invalid credentials"
