@@ -1,5 +1,5 @@
 // // Verify submitting the login form with only Password filled in shows the Invalid credentials error message
-open url "https://automationintesting.online/admin"
+open url from string with parameters "${appBaseUrl}/admin"
 enter "somepass" into "Password"
 click "Login"
 check that page contains "Invalid credentials"

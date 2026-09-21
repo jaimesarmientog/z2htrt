@@ -1,5 +1,5 @@
 // // Verify submitting an excessively long Username and Password shows the Invalid credentials error message
-open url "https://automationintesting.online/admin"
+open url from string with parameters "${appBaseUrl}/admin"
 enter "averylongusernamethatexceedsnormalexpectedlengthforatextfieldaverylongusernamethatexceedsnormalexpectedlength" into "Username"
 enter "averylongpasswordthatexceedsnormalexpectedlengthforatextfieldaverylongpasswordthatexceedsnormalexpectedlength" into "Password"
 click "Login"

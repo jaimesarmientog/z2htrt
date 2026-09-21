@@ -1,8 +1,5 @@
 // Submitting the guest-details form with all fields empty shows every validation message
-open url "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+RR - Book room and confirm reservation
 click "Reserve Now"
 check that page contains "Firstname should not be blank"
 check that page contains "size must be between 3 and 18"

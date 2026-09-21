@@ -1,5 +1,5 @@
 // // Verify submitting whitespace-only Username and Password shows the Invalid credentials error message
-open url "https://automationintesting.online/admin"
+open url from string with parameters "${appBaseUrl}/admin"
 enter "   " into "Username"
 enter "   " into "Password"
 click "Login"

@@ -1,5 +1,5 @@
 // // Verify submitting a SQL-injection style payload in Username still shows the Invalid credentials error message
-open url "https://automationintesting.online/admin"
+open url from string with parameters "${appBaseUrl}/admin"
 enter "' OR '1'='1" into "Username"
 enter "anything" into "Password"
 click "Login"

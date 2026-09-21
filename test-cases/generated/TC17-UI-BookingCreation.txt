@@ -1,11 +1,5 @@
 // Firstname at the maximum accepted length (18 characters) is accepted
-open url "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+RR - Book room and confirm reservation
 enter "Abcdefghijklmnopqr" into "Firstname"
-enter "Smith" into "Lastname"
-enter "test@example.com" into "Email"
-enter "01234567890" into "Phone"
-click "Reserve Now"
+RR - Enter guest details and reserve
 check that page does not contain "size must be between 3 and 18"
