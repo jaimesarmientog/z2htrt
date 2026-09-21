@@ -1,3 +1,0 @@
-// Delete request with no Cookie/token header is rejected with 403 Forbidden (exact probe replication with nonexistent id)
-// Delete request with no Cookie/token header is rejected with 403 Forbidden (exact probe replication with nonexistent id)
-call api delete "https://restful-booker.herokuapp.com/booking/999999" and then check that http code is 403

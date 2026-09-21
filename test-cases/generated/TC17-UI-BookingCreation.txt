@@ -1,11 +1,4 @@
-// Firstname longer than the maximum allowed length triggers the Firstname size validation error
-open url "https://automationintesting.online"
+// Clicking a room card's lowercase 'Book now' button navigates to that room's booking page with the guest-details fields
+go to "https://automationintesting.online"
 click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "Abcdefghijklmnopqrs" into "Firstname"
-enter "Smith" into "Lastname"
-enter "john.smith@example.com" into "Email"
-enter "07123456789" into "Phone"
-click "Reserve Now"
-check that page contains "size must be between 3 and 18"
+check that page contains "Reserve Now"

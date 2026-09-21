@@ -1,5 +1,8 @@
-// Admin login page - Username, Password, and Login controls are present on load
+// Admin Login - Toggle navigation button is present and can be clicked without breaking the login form
+// Admin Login - Toggle navigation button is present and can be clicked without breaking the login form
 open url "https://automationintesting.online/admin"
+check that page contains exactly "Toggle navigation"
+click exactly "Toggle navigation"
 check that page contains "Username"
 check that page contains "Password"
-check that page contains "Login"
+check that page contains exactly "Login"

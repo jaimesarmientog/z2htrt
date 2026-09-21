@@ -1,4 +1,5 @@
-// // Successful authentication with valid credentials returns a token
+// Successful authentication with valid credentials returns 200 and a token
+// Successful authentication with valid credentials returns 200 and a token
 save text starting from next line and ending with [END]
 {
   "username": "admin",
