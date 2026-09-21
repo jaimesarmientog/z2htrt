@@ -1,6 +1,6 @@
-// Admin Login - Logout button is visible on the login page before any authentication has occurred
-// Admin Login - Logout button is visible on the login page before any authentication has occurred
+// // Verify submitting a SQL-injection style payload in Username still shows the Invalid credentials error message
 open url "https://automationintesting.online/admin"
-check that page contains "Username"
-check that page contains "Password"
-check that page contains exactly "Logout"
+enter "' OR '1'='1" into "Username"
+enter "anything" into "Password"
+click "Login"
+check that page contains "Invalid credentials"

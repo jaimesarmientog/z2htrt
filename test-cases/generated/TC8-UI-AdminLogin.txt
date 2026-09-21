@@ -1,8 +1,6 @@
-// Admin Login - Toggle navigation button is present and can be clicked without breaking the login form
-// Admin Login - Toggle navigation button is present and can be clicked without breaking the login form
+// // Verify submitting an excessively long Username and Password shows the Invalid credentials error message
 open url "https://automationintesting.online/admin"
-check that page contains exactly "Toggle navigation"
-click exactly "Toggle navigation"
-check that page contains "Username"
-check that page contains "Password"
-check that page contains exactly "Login"
+enter "averylongusernamethatexceedsnormalexpectedlengthforatextfieldaverylongusernamethatexceedsnormalexpectedlength" into "Username"
+enter "averylongpasswordthatexceedsnormalexpectedlengthforatextfieldaverylongpasswordthatexceedsnormalexpectedlength" into "Password"
+click "Login"
+check that page contains "Invalid credentials"

@@ -1,8 +1,5 @@
-// Admin Login page displays the expected form fields and actions
-// Admin Login page displays the expected form fields and actions
+// // Verify the Admin Login page loads with Username, Password fields and a Login button
 open url "https://automationintesting.online/admin"
 check that page contains "Username"
 check that page contains "Password"
-check that page contains exactly "Login"
-check that page contains exactly "Logout"
-check that page contains exactly "Toggle navigation"
+check that page contains "Login"

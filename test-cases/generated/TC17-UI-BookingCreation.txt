@@ -1,4 +1,11 @@
-// Clicking a room card's lowercase 'Book now' button navigates to that room's booking page with the guest-details fields
-go to "https://automationintesting.online"
+// Firstname at the maximum accepted length (18 characters) is accepted
+open url "https://automationintesting.online"
 click exactly "Book now"
-check that page contains "Reserve Now"
+click "Reserve Now"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+enter "Abcdefghijklmnopqr" into "Firstname"
+enter "Smith" into "Lastname"
+enter "test@example.com" into "Email"
+enter "01234567890" into "Phone"
+click "Reserve Now"
+check that page does not contain "size must be between 3 and 18"
