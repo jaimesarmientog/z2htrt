@@ -1,10 +1,11 @@
-// Leaving the Email field empty while all other fields are valid still triggers an empty-field validation message
-go to "https://automationintesting.online"
+// Firstname below minimum length triggers the size validation message
+open url "https://automationintesting.online"
 click exactly "Book now"
 click "Reserve Now"
 wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
-enter "Doe" into "Lastname"
-enter "12345678901" into "Phone"
+enter "Al" into "Firstname"
+enter "Smith" into "Lastname"
+enter "test@example.com" into "Email"
+enter "01234567890" into "Phone"
 click "Reserve Now"
-check that page contains "must not be empty"
+check that page contains "size must be between 3 and 18"

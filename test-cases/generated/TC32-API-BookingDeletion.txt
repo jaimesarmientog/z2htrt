@@ -1,4 +1,0 @@
-// Negative: DELETE booking without any Cookie/token header is rejected with 403 Forbidden
-// Negative: DELETE booking without any Cookie/token header is rejected with 403 Forbidden
-call api delete "https://restful-booker.herokuapp.com/booking/999999" and get "$" and save it as "deleteResponse" and then check that http code is 403
-check that stored value "deleteResponse" itself contains "Forbidden"

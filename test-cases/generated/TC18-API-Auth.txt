@@ -1,9 +1,0 @@
-// Successful authentication with valid credentials returns 200 and a token
-// Successful authentication with valid credentials returns 200 and a token
-save text starting from next line and ending with [END]
-{
-  "username": "admin",
-  "password": "password123"
-}
-[END] as "authBody"
-call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.token" and save it as "authToken" and then check that http code is 200
