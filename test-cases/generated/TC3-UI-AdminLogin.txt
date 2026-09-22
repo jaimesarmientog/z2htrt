@@ -1,6 +1,5 @@
-// // Submitting the Admin Login form with invalid username and password shows the Invalid credentials error
+// // Admin Login - entering only a username and leaving password blank shows 'Invalid credentials'
 open url "https://automationintesting.online/admin"
 enter "invalid_user" into "Username"
-enter "invalid_pass" into "Password"
 click "Login"
 check that page contains "Invalid credentials"

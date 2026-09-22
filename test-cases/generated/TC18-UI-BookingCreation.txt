@@ -1,12 +1,9 @@
-// Firstname containing only whitespace triggers the Firstname blank validation message
+// Booking Creation - clicking Cancel on the guest-details form returns to the calendar view where no Cancel button is present
 open url "https://automationintesting.online"
 click exactly "Book now"
 wait 1 sec up to 10 times until page contains "Reserve Now"
 click "Reserve Now"
 wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "   " into "Firstname"
-enter "Johnson" into "Lastname"
-enter "alice.johnson@example.com" into "Email"
-enter "07123456789" into "Phone"
-click "Reserve Now"
-check that page contains "Firstname should not be blank"
+click "Cancel"
+check that page contains "Reserve Now"
+check that page does not contain "Cancel"

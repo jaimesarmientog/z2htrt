@@ -1,6 +1,5 @@
-// // Submitting the Admin Login form with whitespace-only values in both fields shows the Invalid credentials error
+// // Admin Login - Logout button is visible and usable even before authenticating, and navigates away from the login form
 open url "https://automationintesting.online/admin"
-enter " " into "Username"
-enter " " into "Password"
-click "Login"
-check that page contains "Invalid credentials"
+check that page contains "Logout"
+click "Logout"
+check that page does not contain "Password"

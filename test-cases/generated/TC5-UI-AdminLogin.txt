@@ -1,5 +1,6 @@
-// // Submitting the Admin Login form with only the password filled in shows the same Invalid credentials error
+// // Admin Login - login page displays the expected form fields and actions
 open url "https://automationintesting.online/admin"
-enter "invalid_pass" into "Password"
-click "Login"
-check that page contains "Invalid credentials"
+check that page contains "Username"
+check that page contains "Password"
+check that page contains "Login"
+check that page contains "Logout"
