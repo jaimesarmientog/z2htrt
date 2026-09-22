@@ -1,0 +1,2 @@
+open url from string with parameters "${appBaseUrl}/admin"
+enter stored value "username" into "Username"

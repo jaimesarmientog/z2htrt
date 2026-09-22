@@ -1,9 +1,9 @@
 // // Authenticate to /auth with an invalid username and invalid password returns 200 with a Bad credentials reason (observed behavior)
-save text starting from next line and ending with [END]
+save text with parameters starting from next line and ending with [END]
 {
-  "username": "invalid_user",
-  "password": "invalid_pass"
+  "username": "${username}",
+  "password": "${password}"
 }
 [END] as "invalidAuthBody"
-call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${invalidAuthBody} and get "$.reason" and save it as "authReason" and then check that http code is 200
+call api post from the string with parameters "${apiBaseUrl}/auth" with headers "Content-Type:application/json" and body with parameters ${invalidAuthBody} and get "$.reason" and save it as "authReason" and then check that http code is 200
 check that page contains "Bad credentials"

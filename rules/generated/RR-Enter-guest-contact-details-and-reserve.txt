@@ -1,0 +1,4 @@
+enter stored value "lastname" into "Lastname"
+enter stored value "email" into "Email"
+enter stored value "phone" into "Phone"
+click "Reserve Now"
