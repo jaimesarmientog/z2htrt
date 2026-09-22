@@ -74,6 +74,9 @@ export const CONFIRMED_SYNTAX_NOTES = `
   named step first using the multi-line block, then reference that
   variable in the call:
   \`save text starting from next line and ending with [END]\n{\n  "key": "value"\n}\n[END] as "body"\`
+  The \`as "varName"\` clause MUST go on the CLOSING \`[END]\` line, never
+  on the opening trigger line (i.e. never \`...ending with [END] as
+  "body"\` as the first line) — this has been a real, observed mistake.
   \`call api post "<url>" with headers "..." and body with parameters \${body} and get ...\`
   If the JSON block itself contains a \${var} placeholder (e.g. a value
   coming from another stored value), mark the save step itself with

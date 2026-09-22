@@ -96,7 +96,15 @@ export function parseLogicalSteps(rawLines: string[]): string[] {
   let i = 0;
   while (i < rawLines.length) {
     const line = rawLines[i];
-    if (/ending with \[END\]\s*$/.test(line.trim())) {
+    // NOT anchored to end-of-line: the confirmed instructed format puts
+    // the "as \"varName\"\" clause on the CLOSING line, but Claude has
+    // been observed putting it on the OPENING line instead (right after
+    // "[END]"). An anchored match would silently fail to recognize that
+    // variant as a block-opener at all, un-atomizing the whole block —
+    // exactly how a prior run produced a rule containing only a
+    // trailing "}" + "[END]" fragment. Matching anywhere in the line
+    // handles either placement.
+    if (/ending with \[END\]/.test(line.trim())) {
       const blockLines = [line];
       i++;
       while (i < rawLines.length) {
@@ -112,6 +120,22 @@ export function parseLogicalSteps(rawLines: string[]): string[] {
     }
   }
   return logical;
+}
+
+/**
+ * Finds the variable name a JSON block was saved as, checking both the
+ * opening and closing line — robust to Claude's observed inconsistency
+ * about which line carries the `as "varName"` clause. Only checks these
+ * two specific lines (not the whole block) to avoid false-matching JSON
+ * content that coincidentally contains the literal text `as "..."`.
+ */
+export function extractBlockVarName(step: string): string | null {
+  const lines = step.split("\n");
+  for (const candidate of [lines[0], lines[lines.length - 1]]) {
+    const match = candidate?.match(/\bas\s+"([^"]+)"/);
+    if (match) return match[1];
+  }
+  return null;
 }
 
 async function readTestCaseFiles(): Promise<TestCaseFile[]> {
@@ -439,7 +463,176 @@ function tryParseJsonBlock(step: string): unknown | null {
 }
 
 function isJsonBlockStep(step: string): boolean {
-  return /ending with \[END\]\s*$/.test(step.split("\n")[0].trim());
+  return /ending with \[END\]/.test(step.split("\n")[0].trim());
+}
+
+// ---------------------------------------------------------------------
+// Whole-JSON-body Test Data candidates (Jaime's ask: testRigor allows
+// multi-line stored values, so a JSON body used verbatim across >= 2
+// test cases should become ONE shared Test Data variable, with the
+// per-test-case "save text ... as ..." step removed entirely, rather
+// than every test case re-declaring its own identical copy).
+// ---------------------------------------------------------------------
+
+interface SharedJsonBodyOccurrence {
+  containerIndex: number;
+  stepIndex: number;
+  /** The local variable name this occurrence's block was saved as (from either the opening or closing line), if any. */
+  oldVarName: string | null;
+}
+
+interface SharedJsonBodyCandidate {
+  /** Parsed-and-restringified form, used only for equality comparison. */
+  canonicalKey: string;
+  /** The original, human-formatted interior text from the first occurrence — used as the Test Data example value. */
+  displayText: string;
+  occurrences: SharedJsonBodyOccurrence[];
+}
+
+/**
+ * Stringifies a parsed JSON value with object keys sorted recursively,
+ * so two objects with identical data but different field ordering
+ * (plausible — Claude isn't perfectly consistent about this across
+ * separate calls) still produce the same canonical key. Plain
+ * JSON.stringify preserves insertion order and would incorrectly treat
+ * such pairs as different.
+ */
+function canonicalizeJson(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map(canonicalizeJson).join(",")}]`;
+  }
+  if (value && typeof value === "object") {
+    const keys = Object.keys(value as object).sort();
+    return `{${keys.map((k) => `${JSON.stringify(k)}:${canonicalizeJson((value as Record<string, unknown>)[k])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+/**
+ * Finds JSON body blocks whose content is byte-for-byte identical
+ * (after parsing, so incidental whitespace differences don't prevent a
+ * match) across at least MIN_OCCURRENCES occurrences. Comparison is by
+ * parsed value, not raw text, so two blocks with the same data but
+ * different formatting still correctly match.
+ */
+export function findSharedJsonBodyCandidates(containers: StepContainer[]): SharedJsonBodyCandidate[] {
+  const byKey = new Map<string, SharedJsonBodyCandidate>();
+
+  containers.forEach((container, containerIndex) => {
+    container.steps.forEach((step, stepIndex) => {
+      if (!isJsonBlockStep(step)) return;
+      const parsed = tryParseJsonBlock(step);
+      if (parsed === null) return; // not valid JSON (e.g. already parameterized elsewhere) — skip
+
+      const canonicalKey = canonicalizeJson(parsed);
+      const lines = step.split("\n");
+      const endIndex = lines.findIndex((l) => l.trim().startsWith("[END]"));
+      const displayText = lines.slice(1, endIndex).join("\n");
+      const occ: SharedJsonBodyOccurrence = { containerIndex, stepIndex, oldVarName: extractBlockVarName(step) };
+
+      const existing = byKey.get(canonicalKey);
+      if (existing) {
+        existing.occurrences.push(occ);
+      } else {
+        byKey.set(canonicalKey, { canonicalKey, displayText, occurrences: [occ] });
+      }
+    });
+  });
+
+  return [...byKey.values()].filter((c) => c.occurrences.length >= MIN_OCCURRENCES);
+}
+
+function fallbackJsonBodyName(index: number): string {
+  return `sharedRequestBody${index + 1}`;
+}
+
+/**
+ * Names shared JSON body variables via Claude — same narrow-use pattern
+ * as nameRules (naming is the one thing that benefits from judgment;
+ * detection itself is already done deterministically). Falls back to a
+ * generic but valid name if the call fails twice, same policy as rules.
+ */
+async function nameSharedJsonBodies(candidates: SharedJsonBodyCandidate[]): Promise<string[]> {
+  if (candidates.length === 0) return [];
+
+  const system = [
+    "You are naming shared testRigor Test Data variables that hold a JSON request body used " +
+      "identically across multiple test cases — the deduplication itself is already done; your only " +
+      "job is to give each one a clear, human-readable camelCase variable name (e.g. " +
+      '"validBookingPayload", "adminAuthCredentials").',
+    'Respond with ONLY a JSON array of strings (no markdown fences, no prose), one name per input, ' +
+      "in the same order.",
+  ].join("\n\n");
+
+  const user = `JSON bodies to name:\n\n${JSON.stringify(candidates.map((c) => c.displayText), null, 2)}`;
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const response = await anthropic.messages.create({
+        model: MODEL,
+        max_tokens: MAX_TOKENS,
+        system,
+        messages: [{ role: "user", content: user }],
+      });
+      const raw = response.content
+        .filter((b): b is Anthropic.TextBlock => b.type === "text")
+        .map((b) => b.text)
+        .join("\n");
+      const names = JSON.parse(stripCodeFence(raw)) as unknown;
+      if (!Array.isArray(names) || names.length !== candidates.length || !names.every((n) => typeof n === "string")) {
+        throw new Error(`expected an array of ${candidates.length} strings, got: ${raw}`);
+      }
+      return names as string[];
+    } catch (err) {
+      console.error(`nameSharedJsonBodies: attempt ${attempt} failed.`, err);
+    }
+  }
+
+  console.error("nameSharedJsonBodies: both attempts failed — falling back to generic names.");
+  return candidates.map((_, i) => fallbackJsonBodyName(i));
+}
+
+/**
+ * Removes each matched "save text ... as ..." step entirely (the value
+ * now lives in Test Data, so no per-test-case save step is needed), and
+ * rewrites every reference to that occurrence's old local variable name
+ * (both ${oldVarName} interpolation and a bare `stored value
+ * "oldVarName"` reference, in case either form was used) to the new
+ * shared name instead. Processes removals within each container in
+ * descending step-index order so earlier indices stay valid as later
+ * steps are spliced out.
+ */
+export function applySharedJsonBodyReplacements(containers: StepContainer[], candidates: SharedJsonBodyCandidate[], names: string[]): void {
+  const removalsByContainer = new Map<number, Array<{ stepIndex: number; oldVarName: string | null; newVarName: string }>>();
+
+  candidates.forEach((candidate, i) => {
+    const newVarName = names[i];
+    for (const occ of candidate.occurrences) {
+      const list = removalsByContainer.get(occ.containerIndex) ?? [];
+      list.push({ stepIndex: occ.stepIndex, oldVarName: occ.oldVarName, newVarName });
+      removalsByContainer.set(occ.containerIndex, list);
+    }
+  });
+
+  for (const [containerIndex, removals] of removalsByContainer) {
+    const container = containers[containerIndex];
+
+    for (const { oldVarName, newVarName } of removals) {
+      if (!oldVarName) continue;
+      container.steps = container.steps.map((step) =>
+        step
+          .split(`\${${oldVarName}}`)
+          .join(`\${${newVarName}}`)
+          .split(`stored value "${oldVarName}"`)
+          .join(`stored value "${newVarName}"`)
+      );
+    }
+
+    const sortedRemovals = [...removals].sort((a, b) => b.stepIndex - a.stepIndex);
+    for (const { stepIndex } of sortedRemovals) {
+      container.steps.splice(stepIndex, 1);
+    }
+  }
 }
 
 /**
@@ -656,9 +849,15 @@ async function writeTestDataManifest(entries: TestDataNeeded[]): Promise<void> {
     "This refinement pass parameterized the following values. Before running these test cases, " +
       "add each of these to the suite's **Test Data** section in the testRigor UI:",
     "",
-    ...entries.map((e) => `- \`${e.name}\` → \`${e.exampleValue}\``),
-    "",
   ];
+  for (const e of entries) {
+    if (e.exampleValue.includes("\n")) {
+      lines.push(`- \`${e.name}\`:`, "  ```json", ...e.exampleValue.split("\n").map((l) => `  ${l}`), "  ```");
+    } else {
+      lines.push(`- \`${e.name}\` → \`${e.exampleValue}\``);
+    }
+  }
+  lines.push("");
   await fs.writeFile(TEST_DATA_MANIFEST_PATH, lines.join("\n"), "utf8");
 }
 
@@ -725,6 +924,19 @@ async function main(): Promise<void> {
   // write out below, since these are references, not copies.
   const allContainers: StepContainer[] = [...testCases, ...namedWithOccurrences];
 
+  // Whole-JSON-body detection runs BEFORE per-field data-value detection:
+  // a body that's fully identical across test cases gets promoted to a
+  // single shared Test Data variable and its "save text ... as ..."
+  // step is removed entirely — so there's nothing left for the per-field
+  // pass below to redundantly (or conflictingly) touch inside it.
+  const sharedJsonBodyCandidates = findSharedJsonBodyCandidates(allContainers);
+  const sharedJsonBodyNames = await nameSharedJsonBodies(sharedJsonBodyCandidates);
+  applySharedJsonBodyReplacements(allContainers, sharedJsonBodyCandidates, sharedJsonBodyNames);
+  const sharedJsonBodyManifestEntries: TestDataNeeded[] = sharedJsonBodyCandidates.map((c, i) => ({
+    name: sharedJsonBodyNames[i],
+    exampleValue: c.displayText,
+  }));
+
   const dataValueCandidates = findDataValueCandidates(allContainers);
   const dataValueVarNames = assignVariableNames(dataValueCandidates);
   applyDataValueReplacements(allContainers, dataValueCandidates, dataValueVarNames);
@@ -737,12 +949,12 @@ async function main(): Promise<void> {
 
   await writeRules(namedWithOccurrences);
   await writeUpdatedTestCases(testCases);
-  await writeTestDataManifest([...urlManifestEntries, ...dataValueManifestEntries]);
+  await writeTestDataManifest([...urlManifestEntries, ...sharedJsonBodyManifestEntries, ...dataValueManifestEntries]);
 
   console.log(
     `Extracted ${namedWithOccurrences.length} rule(s) to ${RULES_DIR}, parameterized ` +
-      `${urlManifestEntries.length} base URL(s) and ${dataValueManifestEntries.length} data value(s), ` +
-      `and wrote ${TEST_DATA_MANIFEST_PATH}.`
+      `${urlManifestEntries.length} base URL(s), ${sharedJsonBodyManifestEntries.length} shared JSON ` +
+      `bod(y/ies), and ${dataValueManifestEntries.length} data value(s), and wrote ${TEST_DATA_MANIFEST_PATH}.`
   );
 }
 
