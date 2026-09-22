@@ -1,5 +1,5 @@
 // // Admin Login - login page displays the expected form fields and actions
-open url "https://automationintesting.online/admin"
+open url from string with parameters "${appBaseUrl}/admin"
 check that page contains "Username"
 check that page contains "Password"
 check that page contains "Login"

@@ -1,29 +1,3 @@
 // PUT /booking/{id} - request with an invalid (non-issued) auth token value is rejected with 403
-save text starting from next line and ending with [END]
-{
-  "firstname": "Jim",
-  "lastname": "Brown",
-  "totalprice": 111,
-  "depositpaid": true,
-  "bookingdates": {
-    "checkin": "2024-01-01",
-    "checkout": "2024-01-05"
-  },
-  "additionalneeds": "Breakfast"
-}
-[END] as "createBookingBody"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${createBookingBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
-save text starting from next line and ending with [END]
-{
-  "firstname": "James",
-  "lastname": "Brown",
-  "totalprice": 222,
-  "depositpaid": false,
-  "bookingdates": {
-    "checkin": "2024-02-01",
-    "checkout": "2024-02-10"
-  },
-  "additionalneeds": "Lunch"
-}
-[END] as "updateBookingBody"
-call api put from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:token=invalidtoken123" and body with parameters ${updateBookingBody} and then check that http code is 403
+call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body with parameters ${jimBrownBookingPayload} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
+call api put from the string with parameters from the string with parameters "${apiBaseUrl}/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:token=invalidtoken123" and body with parameters ${jamesBrownBookingPayload} and then check that http code is 403

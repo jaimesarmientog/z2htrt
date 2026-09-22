@@ -5,5 +5,5 @@ save text starting from next line and ending with [END]
   "password": "password123"
 }
 [END] as "wrongUsernameAuthBody"
-call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${wrongUsernameAuthBody} and get "$.reason" and save it as "authReason" and then check that http code is 200
+call api post from the string with parameters "${apiBaseUrl}/auth" with headers "Content-Type:application/json" and body with parameters ${wrongUsernameAuthBody} and get "$.reason" and save it as "authReason" and then check that http code is 200
 check that page contains "Bad credentials"

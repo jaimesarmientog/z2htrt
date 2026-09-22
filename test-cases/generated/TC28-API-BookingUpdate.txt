@@ -1,2 +1,2 @@
 // PUT /booking/{id} - request without any Cookie/token header is rejected with 403 Forbidden
-call api put "https://restful-booker.herokuapp.com/booking/999999" and then check that http code is 403
+call api put from the string with parameters "${apiBaseUrl}/booking/999999" and then check that http code is 403

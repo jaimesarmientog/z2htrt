@@ -1,11 +1,4 @@
 // Booking Creation - leaving Lastname empty while other fields are valid triggers the Lastname-blank validation message
-open url "https://automationintesting.online"
-click exactly "Book now"
-wait 1 sec up to 10 times until page contains "Reserve Now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
-enter "john.doe@example.com" into "Email"
-enter "07123456789" into "Phone"
-click "Reserve Now"
+RR - Navigate to reservation form and enter first name
+RR - Enter email and phone and reserve
 check that page contains "Lastname should not be blank"

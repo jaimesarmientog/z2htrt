@@ -2,4 +2,4 @@
 save text starting from next line and ending with [END]
 {}
 [END] as "body"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${body} and then check that http code is 500
+call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body with parameters ${body} and then check that http code is 500

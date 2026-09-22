@@ -1,8 +1,8 @@
 // POST /booking - creates a booking without the optional additionalneeds field and returns 200
-save text starting from next line and ending with [END]
+save text with parameters starting from next line and ending with [END]
 {
   "firstname": "Sarah",
-  "lastname": "Smith",
+  "lastname": "${lastname}",
   "totalprice": 250,
   "depositpaid": false,
   "bookingdates": {
@@ -11,4 +11,4 @@ save text starting from next line and ending with [END]
   }
 }
 [END] as "body"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
+call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200

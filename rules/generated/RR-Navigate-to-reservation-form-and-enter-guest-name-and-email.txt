@@ -1,0 +1,8 @@
+open url from stored value "appBaseUrl"
+click exactly "Book now"
+wait 1 sec up to 10 times until page contains "Reserve Now"
+click "Reserve Now"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+enter stored value "firstname" into "Firstname"
+enter stored value "lastname" into "Lastname"
+enter stored value "email" into "Email"
