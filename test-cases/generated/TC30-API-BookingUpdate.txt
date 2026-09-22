@@ -1,4 +1,4 @@
-// PUT /booking/{id} - request with an invalid (non-empty but bogus) auth token in the Cookie header is rejected with 403 per the documented 'missing or invalid auth token' response
+// PUT /booking/{id} - request with a valid token value but a malformed Cookie header (missing the 'token=' prefix) is rejected with 403
 save text starting from next line and ending with [END]
 {
   "username": "admin",
@@ -23,7 +23,7 @@ call api post "https://restful-booker.herokuapp.com/booking" with headers "Conte
 save text starting from next line and ending with [END]
 {
   "firstname": "James",
-  "lastname": "Smith",
+  "lastname": "Brown",
   "totalprice": 222,
   "depositpaid": false,
   "bookingdates": {
@@ -33,4 +33,4 @@ save text starting from next line and ending with [END]
   "additionalneeds": "Lunch"
 }
 [END] as "updateBookingBody"
-call api put from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers "Content-Type:application/json" and "Cookie:token=invalidtoken123" and body with parameters ${updateBookingBody} and then check that http code is 403
+call api put from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:${authToken}" and body with parameters ${updateBookingBody} and then check that http code is 403

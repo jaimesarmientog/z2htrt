@@ -1,4 +1,4 @@
-// PUT /booking/{id} - authenticated user can fully replace an existing booking and receive the updated booking back with 200
+// PUT /booking/{id} - successfully updates an existing booking when a valid auth token is supplied
 save text starting from next line and ending with [END]
 {
   "username": "admin",
@@ -23,7 +23,7 @@ call api post "https://restful-booker.herokuapp.com/booking" with headers "Conte
 save text starting from next line and ending with [END]
 {
   "firstname": "James",
-  "lastname": "Smith",
+  "lastname": "Brown",
   "totalprice": 222,
   "depositpaid": false,
   "bookingdates": {

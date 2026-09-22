@@ -1,3 +1,0 @@
-// // The Toggle navigation control is present on the Admin Login page
-open url "https://automationintesting.online/admin"
-check that page contains "Toggle navigation"

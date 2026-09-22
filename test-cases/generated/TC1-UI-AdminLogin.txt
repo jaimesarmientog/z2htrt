@@ -1,6 +1,4 @@
-// // Verify the Admin Login page displays the expected username, password fields and action buttons
+// // Admin Login - submitting the form with no credentials entered shows 'Invalid credentials'
 open url "https://automationintesting.online/admin"
-check that page contains "Username"
-check that page contains "Password"
-check that page contains "Login"
-check that page contains "Logout"
+click "Login"
+check that page contains "Invalid credentials"

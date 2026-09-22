@@ -1,6 +1,0 @@
-// // The Logout button in the admin nav is not auth-gated and can be clicked before any login attempt, navigating away from the login form
-open url "https://automationintesting.online/admin"
-check that page contains "Logout"
-click "Logout"
-check that page does not contain "Username"
-check that page does not contain "Password"

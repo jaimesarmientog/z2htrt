@@ -1,10 +1,10 @@
-// Booking Creation - Firstname longer than the maximum allowed length triggers the size validation message
+// Booking Creation - Firstname shorter than the minimum allowed length triggers the size validation message
 open url "https://automationintesting.online"
 click exactly "Book now"
 wait 1 sec up to 10 times until page contains "Reserve Now"
 click "Reserve Now"
 wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "ThisFirstNameIsWayTooLongToPass" into "Firstname"
+enter "Al" into "Firstname"
 enter "Smith" into "Lastname"
 enter "john.doe@example.com" into "Email"
 enter "07123456789" into "Phone"

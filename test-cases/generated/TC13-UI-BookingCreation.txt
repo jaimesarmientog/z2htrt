@@ -1,12 +1,13 @@
-// Firstname longer than the maximum allowed length triggers the Firstname size validation message
+// Booking Creation - leaving Email empty while other fields are valid triggers the required-field validation message
 open url "https://automationintesting.online"
 click exactly "Book now"
 wait 1 sec up to 10 times until page contains "Reserve Now"
 click "Reserve Now"
 wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" into "Firstname"
-enter "Johnson" into "Lastname"
-enter "alice.johnson@example.com" into "Email"
+enter "John" into "Firstname"
+enter "Smith" into "Lastname"
 enter "07123456789" into "Phone"
 click "Reserve Now"
-check that page contains "size must be between 3 and 30"
+check that page contains "must not be empty"
+check that page does not contain "Firstname should not be blank"
+check that page does not contain "Lastname should not be blank"
