@@ -65,7 +65,15 @@ const KNOWN_BASE_URLS: Array<{ literal: string; paramName: string }> = [
 // gate, not this threshold (Jaime reviews every refinement PR as an
 // auditor before merging, deliberately not auto-merged).
 const MIN_OCCURRENCES = 2;
-const MIN_SEQUENCE_LENGTH = 2;
+// A single repeated LINE is a perfectly legitimate rule (confirmed by
+// a real, useful one-line rule already in production:
+// "RR - Authenticate as admin via API"). This used to be 2, out of
+// caution about re-extracting a JSON-block fragment — but that risk is
+// now fully handled by parseLogicalSteps' atomicity guarantee (a block
+// can never appear as an independent 1-line step to begin with), so
+// restricting length here no longer buys any safety, only misses
+// legitimate single-line rules.
+const MIN_SEQUENCE_LENGTH = 1;
 
 const anthropic = new Anthropic();
 
@@ -251,6 +259,7 @@ export function findRepeatedSequences(testCases: TestCaseFile[]): RepeatedSequen
 
 interface NamedRule {
   name: string; // includes the "RR - " prefix
+  description: string; // becomes the rule file's "// ..." header, same convention as test cases
   steps: string[];
 }
 
@@ -264,22 +273,29 @@ function stripCodeFence(text: string): string {
   return fenceMatch ? fenceMatch[1] : trimmed;
 }
 
-/** Deterministic fallback name, used if the naming call fails twice. */
+/** Deterministic fallback name/description, used if the naming call fails twice. */
 function fallbackRuleName(index: number): string {
   return `RR - Shared steps ${index + 1}`;
+}
+function fallbackRuleDescription(steps: string[]): string {
+  return `Shared steps: ${steps[0]?.split("\n")[0] ?? "(no steps)"}${steps.length > 1 ? " and more" : ""}`;
 }
 
 async function nameRules(sequences: RepeatedSequence[]): Promise<NamedRule[]> {
   if (sequences.length === 0) return [];
 
   const system = [
-    "You are naming testRigor reusable rules that have already been mechanically extracted from " +
-      "repeated step sequences — the extraction itself is done; your only job is to give each one a " +
-      "clear, human-readable name.",
+    "You are naming and describing testRigor reusable rules that have already been mechanically " +
+      "extracted from repeated step sequences — the extraction itself is done; your only job is to " +
+      "give each one a clear, human-readable name and a one-line description, the same way each test " +
+      "case file already carries a `// description` header.",
     CONFIRMED_SYNTAX_NOTES,
-    'Respond with ONLY a JSON array (no markdown fences, no prose) of exactly one string per input ' +
-      'sequence, in the same order, each already including the required "RR - " prefix. Example: ' +
-      '["RR - Authenticate as admin via API", "RR - Navigate to admin login"]',
+    'Respond with ONLY a JSON array (no markdown fences, no prose) of exactly one ' +
+      '{ "name": string, "description": string } object per input sequence, in the same order. Each ' +
+      '"name" MUST already include the required "RR - " prefix; "description" should read like a test ' +
+      'case header comment — what this rule does, not just a restatement of its name. Example:\n' +
+      '[{ "name": "RR - Authenticate as admin via API", "description": "Authenticates via POST /auth ' +
+      'with the shared admin credentials and saves the resulting token" }]',
   ].join("\n\n");
 
   const user = `Sequences to name (each is an array of step lines — a single string containing "\\n" is one multi-line step, e.g. a JSON body block):\n\n${JSON.stringify(
@@ -300,18 +316,23 @@ async function nameRules(sequences: RepeatedSequence[]): Promise<NamedRule[]> {
         .filter((b): b is Anthropic.TextBlock => b.type === "text")
         .map((b) => b.text)
         .join("\n");
-      const names = JSON.parse(stripCodeFence(raw)) as unknown;
-      if (!Array.isArray(names) || names.length !== sequences.length || !names.every((n) => typeof n === "string")) {
-        throw new Error(`expected an array of ${sequences.length} strings, got: ${raw}`);
+      const parsed = JSON.parse(stripCodeFence(raw)) as unknown;
+      if (
+        !Array.isArray(parsed) ||
+        parsed.length !== sequences.length ||
+        !parsed.every((n) => n && typeof n.name === "string" && typeof n.description === "string")
+      ) {
+        throw new Error(`expected an array of ${sequences.length} {name, description} objects, got: ${raw}`);
       }
-      return sequences.map((seq, i) => ({ name: (names as string[])[i], steps: seq.steps }));
+      const named = parsed as Array<{ name: string; description: string }>;
+      return sequences.map((seq, i) => ({ name: named[i].name, description: named[i].description, steps: seq.steps }));
     } catch (err) {
       console.error(`nameRules: attempt ${attempt} failed.`, err);
     }
   }
 
-  console.error("nameRules: both attempts failed — falling back to generic names for all extracted rules.");
-  return sequences.map((seq, i) => ({ name: fallbackRuleName(i), steps: seq.steps }));
+  console.error("nameRules: both attempts failed — falling back to generic names/descriptions for all extracted rules.");
+  return sequences.map((seq, i) => ({ name: fallbackRuleName(i), description: fallbackRuleDescription(seq.steps), steps: seq.steps }));
 }
 
 // ---------------------------------------------------------------------
@@ -592,15 +613,47 @@ async function nameSharedJsonBodies(candidates: SharedJsonBodyCandidate[]): Prom
   return candidates.map((_, i) => fallbackJsonBodyName(i));
 }
 
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Normalizes any of several syntactically-valid-but-different ways a
+ * body reference to oldVarName might have been written into ONE
+ * canonical form (`body from stored value "..."`, matching the general
+ * confirmed "from stored value" pattern). This is necessary, not
+ * cosmetic: two occurrences referencing the exact same shared variable
+ * through different (individually valid) surface syntax look different
+ * to findRepeatedSequences' plain-text matching, silently preventing
+ * them from ever collapsing into one rule invocation — confirmed from a
+ * real PR where a rule and a test case both correctly used the shared
+ * variable but never got recognized as duplicates because one used
+ * `${var}` interpolation and the other used `from stored value "var"`.
+ */
+function normalizeBodyReference(step: string, oldVarName: string, newVarName: string): string {
+  const escaped = escapeRegExp(oldVarName);
+  const patterns: RegExp[] = [
+    new RegExp(`\\bbody\\s+with parameters\\s+\\$\\{${escaped}\\}`),
+    new RegExp(`\\bbody\\s+from stored value\\s+"${escaped}"`),
+    new RegExp(`\\bbody\\s+from the string with parameters\\s+"\\$\\{${escaped}\\}"`),
+    new RegExp(`\\bbody\\s+stored value\\s+"${escaped}"`), // in case "from" was omitted somewhere
+  ];
+  for (const pattern of patterns) {
+    if (pattern.test(step)) {
+      return step.replace(pattern, `body from stored value "${newVarName}"`);
+    }
+  }
+  return step;
+}
+
 /**
  * Removes each matched "save text ... as ..." step entirely (the value
  * now lives in Test Data, so no per-test-case save step is needed), and
- * rewrites every reference to that occurrence's old local variable name
- * (both ${oldVarName} interpolation and a bare `stored value
- * "oldVarName"` reference, in case either form was used) to the new
- * shared name instead. Processes removals within each container in
- * descending step-index order so earlier indices stay valid as later
- * steps are spliced out.
+ * normalizes every reference to that occurrence's old local variable
+ * name to the ONE canonical form regardless of which valid syntax the
+ * original used (see normalizeBodyReference). Processes removals within
+ * each container in descending step-index order so earlier indices stay
+ * valid as later steps are spliced out.
  */
 export function applySharedJsonBodyReplacements(containers: StepContainer[], candidates: SharedJsonBodyCandidate[], names: string[]): void {
   const removalsByContainer = new Map<number, Array<{ stepIndex: number; oldVarName: string | null; newVarName: string }>>();
@@ -619,13 +672,7 @@ export function applySharedJsonBodyReplacements(containers: StepContainer[], can
 
     for (const { oldVarName, newVarName } of removals) {
       if (!oldVarName) continue;
-      container.steps = container.steps.map((step) =>
-        step
-          .split(`\${${oldVarName}}`)
-          .join(`\${${newVarName}}`)
-          .split(`stored value "${oldVarName}"`)
-          .join(`stored value "${newVarName}"`)
-      );
+      container.steps = container.steps.map((step) => normalizeBodyReference(step, oldVarName, newVarName));
     }
 
     const sortedRemovals = [...removals].sort((a, b) => b.stepIndex - a.stepIndex);
@@ -878,7 +925,8 @@ async function writeRules(namedRules: NamedRuleWithOccurrences[]): Promise<void>
   await resetDir(RULES_DIR);
   for (const rule of namedRules) {
     const fileName = `${slugForFilename(rule.name)}.txt`;
-    await fs.writeFile(path.join(RULES_DIR, fileName), rule.steps.join("\n") + "\n", "utf8");
+    const content = [`// ${rule.description}`, ...rule.steps].join("\n") + "\n";
+    await fs.writeFile(path.join(RULES_DIR, fileName), content, "utf8");
   }
 }
 
@@ -900,11 +948,36 @@ async function main(): Promise<void> {
     return;
   }
 
-  // Rule extraction first (operates on original hardcoded values —
-  // order doesn't matter for correctness here, since rule extraction
-  // and data-value parameterization touch disjoint concerns, but doing
-  // rules first keeps the data-value scan working against the same
-  // step content Claude will see named rules refer to).
+  // Parameterize/normalize FIRST, extract rules SECOND — this order
+  // matters and is a deliberate fix, not an arbitrary choice. Doing it
+  // the other way around (as an earlier version of this file did) let a
+  // real bug through: two occurrences of the exact same shared value,
+  // written in two different (individually valid) surface syntaxes,
+  // looked different to findRepeatedSequences' plain-text matching and
+  // silently failed to collapse into one rule. Normalizing every
+  // hardcoded value into ONE consistent syntax before rule-matching
+  // even runs means whatever ends up in a rule is already-normalized —
+  // no separate "reach into already-extracted rules" pass is needed
+  // anymore either, since rules are now built FROM normalized content.
+  const sharedJsonBodyCandidates = findSharedJsonBodyCandidates(testCases);
+  const sharedJsonBodyNames = await nameSharedJsonBodies(sharedJsonBodyCandidates);
+  applySharedJsonBodyReplacements(testCases, sharedJsonBodyCandidates, sharedJsonBodyNames);
+  const sharedJsonBodyManifestEntries: TestDataNeeded[] = sharedJsonBodyCandidates.map((c, i) => ({
+    name: sharedJsonBodyNames[i],
+    exampleValue: c.displayText,
+  }));
+
+  const dataValueCandidates = findDataValueCandidates(testCases);
+  const dataValueVarNames = assignVariableNames(dataValueCandidates);
+  applyDataValueReplacements(testCases, dataValueCandidates, dataValueVarNames);
+  const dataValueManifestEntries: TestDataNeeded[] = dataValueCandidates.map((c) => ({
+    name: dataValueVarNames.get(c)!,
+    exampleValue: c.value,
+  }));
+
+  const urlManifestEntries = parameterizeBaseUrls(testCases);
+
+  // NOW extract rules, from the fully-normalized test cases.
   const sequences = findRepeatedSequences(testCases);
   const named = await nameRules(sequences);
   const namedWithOccurrences: NamedRuleWithOccurrences[] = named.map((rule, i) => ({
@@ -913,39 +986,6 @@ async function main(): Promise<void> {
   }));
   applyExtraction(testCases, namedWithOccurrences);
   warnIfMissingOwnAssertion(testCases);
-
-  // Combined view of everything with a mutable steps array — both the
-  // leftover test-case content AND the extracted rules. This is the
-  // fix for the real bug found in the first live run: parameterization
-  // used to only ever touch testCases, so anything already pulled into
-  // a rule (like the base URL, or hardcoded credentials) kept its
-  // literal value forever. Mutating through this combined array
-  // mutates the same underlying objects writeRules/writeUpdatedTestCases
-  // write out below, since these are references, not copies.
-  const allContainers: StepContainer[] = [...testCases, ...namedWithOccurrences];
-
-  // Whole-JSON-body detection runs BEFORE per-field data-value detection:
-  // a body that's fully identical across test cases gets promoted to a
-  // single shared Test Data variable and its "save text ... as ..."
-  // step is removed entirely — so there's nothing left for the per-field
-  // pass below to redundantly (or conflictingly) touch inside it.
-  const sharedJsonBodyCandidates = findSharedJsonBodyCandidates(allContainers);
-  const sharedJsonBodyNames = await nameSharedJsonBodies(sharedJsonBodyCandidates);
-  applySharedJsonBodyReplacements(allContainers, sharedJsonBodyCandidates, sharedJsonBodyNames);
-  const sharedJsonBodyManifestEntries: TestDataNeeded[] = sharedJsonBodyCandidates.map((c, i) => ({
-    name: sharedJsonBodyNames[i],
-    exampleValue: c.displayText,
-  }));
-
-  const dataValueCandidates = findDataValueCandidates(allContainers);
-  const dataValueVarNames = assignVariableNames(dataValueCandidates);
-  applyDataValueReplacements(allContainers, dataValueCandidates, dataValueVarNames);
-  const dataValueManifestEntries: TestDataNeeded[] = dataValueCandidates.map((c) => ({
-    name: dataValueVarNames.get(c)!,
-    exampleValue: c.value,
-  }));
-
-  const urlManifestEntries = parameterizeBaseUrls(allContainers);
 
   await writeRules(namedWithOccurrences);
   await writeUpdatedTestCases(testCases);
