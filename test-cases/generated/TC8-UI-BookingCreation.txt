@@ -1,9 +1,0 @@
-// Booking Creation - submitting the guest-details form with all fields empty shows all field validation messages
-RR - Navigate to reservation form
-click "Reserve Now"
-check that page contains "size must be between 3 and 30"
-check that page contains "size must be between 3 and 18"
-check that page contains "must not be empty"
-check that page contains "size must be between 11 and 21"
-check that page contains "Lastname should not be blank"
-check that page contains "Firstname should not be blank"

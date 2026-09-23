@@ -1,5 +1,12 @@
-// Booking Creation - Phone longer than the maximum allowed length triggers the size validation message
-RR - Navigate to reservation form and enter guest name and email
-enter "1234567890123456789012" into "Phone"
+// Firstname longer than maximum length triggers size validation error
+open url "https://automationintesting.online"
+click exactly "Book now"
 click "Reserve Now"
-check that page contains "size must be between 11 and 21"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+enter "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDE" into "Firstname"
+enter "Smith" into "Lastname"
+enter "john.smith@example.com" into "Email"
+enter "0712345678901" into "Phone"
+click "Reserve Now"
+check that page contains "size must be between 3 and 30"
+check that page does not contain "Firstname should not be blank"

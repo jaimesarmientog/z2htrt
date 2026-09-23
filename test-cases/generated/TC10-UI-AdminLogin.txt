@@ -1,0 +1,6 @@
+// // Admin login attempt with valid administrator credentials does not show the Invalid credentials error
+open url "https://automationintesting.online/admin"
+enter "admin" into "Username"
+enter "password" into "Password"
+click exactly "Login"
+check that page does not contain "Invalid credentials"

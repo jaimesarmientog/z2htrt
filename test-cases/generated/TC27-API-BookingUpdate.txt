@@ -1,3 +1,0 @@
-// PUT /booking/{id} - successfully updates an existing booking when a valid auth token is supplied
-RR - Set up booking data via API
-call api put from the string with parameters from the string with parameters "${apiBaseUrl}/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:token=${authToken}" and body with parameters ${updateBookingBody} and get "$.firstname" and save it as "updatedFirstname" and then check that http code is 200

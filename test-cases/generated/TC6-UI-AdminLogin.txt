@@ -1,5 +1,6 @@
-// // Admin Login - Logout button is visible and usable even before authenticating, and navigates away from the login form
-open url from string with parameters "${appBaseUrl}/admin"
-check that page contains "Logout"
-click "Logout"
-check that page does not contain "Password"
+// // Admin login - excessively long credential values are rejected with Invalid credentials error
+open url "https://automationintesting.online/admin"
+enter "user_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" into "Username"
+enter "pass_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" into "Password"
+click exactly "Login"
+check that page contains "Invalid credentials"

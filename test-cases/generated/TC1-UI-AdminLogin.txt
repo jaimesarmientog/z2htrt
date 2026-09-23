@@ -1,4 +1,6 @@
-// // Admin Login - submitting the form with no credentials entered shows 'Invalid credentials'
-open url from string with parameters "${appBaseUrl}/admin"
-click "Login"
+// // Admin login - empty submit shows Invalid credentials error
+open url "https://automationintesting.online/admin"
+check that page contains "Username"
+check that page contains "Password"
+click exactly "Login"
 check that page contains "Invalid credentials"

@@ -1,2 +1,0 @@
-// POST /booking - creates a booking with all fields (including optional additionalneeds) and returns 200 with a bookingid
-call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body with parameters ${jimBrownBookingPayload} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200

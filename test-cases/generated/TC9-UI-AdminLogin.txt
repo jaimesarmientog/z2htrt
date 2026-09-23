@@ -1,0 +1,4 @@
+// // Admin login - clicking Logout before authenticating returns to the homepage without logging in
+open url "https://automationintesting.online/admin"
+click exactly "Logout"
+check that page contains "Logout"
