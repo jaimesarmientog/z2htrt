@@ -1,0 +1,37 @@
+// PUT /booking/{id} - authenticated request with a valid token fully replaces the booking and returns 200 with the new field values
+save text starting from next line and ending with [END]
+{
+  "username": "admin",
+  "password": "password123"
+}
+[END] as "authBody"
+call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.token" and save it as "authToken" and then check that http code is 200
+save text starting from next line and ending with [END]
+{
+  "firstname": "James",
+  "lastname": "Brown",
+  "totalprice": 111,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2018-01-01",
+    "checkout": "2019-01-01"
+  },
+  "additionalneeds": "Breakfast"
+}
+[END] as "createBody"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${createBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
+save text starting from next line and ending with [END]
+{
+  "firstname": "Jim",
+  "lastname": "Brown",
+  "totalprice": 222,
+  "depositpaid": false,
+  "bookingdates": {
+    "checkin": "2020-01-01",
+    "checkout": "2021-01-01"
+  },
+  "additionalneeds": "Lunch"
+}
+[END] as "updateBody"
+call api put from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:token=${authToken}" and body with parameters ${updateBody} and get "$.firstname" and save it as "updatedFirstname" and then check that http code is 200
+check that stored value "updatedFirstname" equals "Jim"

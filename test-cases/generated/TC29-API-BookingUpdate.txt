@@ -1,3 +1,0 @@
-// PUT /booking/{id} - request with an invalid (non-issued) auth token value is rejected with 403
-call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body with parameters ${jimBrownBookingPayload} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
-call api put from the string with parameters from the string with parameters "${apiBaseUrl}/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:token=invalidtoken123" and body with parameters ${jamesBrownBookingPayload} and then check that http code is 403

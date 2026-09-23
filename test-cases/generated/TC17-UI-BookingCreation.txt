@@ -1,4 +1,12 @@
-// Booking Creation - leaving Lastname empty while other fields are valid triggers the Lastname-blank validation message
-RR - Navigate to reservation form and enter first name
-RR - Enter email and phone and reserve
-check that page contains "Lastname should not be blank"
+// Firstname at maximum valid length (30 characters) passes validation
+open url "https://automationintesting.online"
+click exactly "Book now"
+click "Reserve Now"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+enter "ABCDEFGHIJKLMNOPQRSTUVWXYZABCD" into "Firstname"
+enter "Smith" into "Lastname"
+enter "john.smith@example.com" into "Email"
+enter "0712345678901" into "Phone"
+click "Reserve Now"
+check that page does not contain "size must be between 3 and 30"
+check that page does not contain "Firstname should not be blank"

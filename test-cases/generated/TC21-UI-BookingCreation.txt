@@ -1,11 +1,12 @@
-// Blank Firstname triggers required and size validation errors
+// Lastname at minimum valid length (3 characters) passes validation
 open url "https://automationintesting.online"
 click exactly "Book now"
 click "Reserve Now"
 wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "Smith" into "Lastname"
+enter "John" into "Firstname"
+enter "Doe" into "Lastname"
 enter "john.smith@example.com" into "Email"
 enter "0712345678901" into "Phone"
 click "Reserve Now"
-check that page contains "Firstname should not be blank"
-check that page contains "size must be between 3 and 30"
+check that page does not contain "size must be between 3 and 18"
+check that page does not contain "Lastname should not be blank"

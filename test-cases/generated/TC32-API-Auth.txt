@@ -1,0 +1,9 @@
+// // POST /auth - valid username with an invalid password returns Bad credentials
+save text starting from next line and ending with [END]
+{
+  "username": "admin",
+  "password": "invalid_pass"
+}
+[END] as "body"
+call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.reason" and save it as "reason" and then check that http code is 200
+check that stored value "reason" is "Bad credentials"

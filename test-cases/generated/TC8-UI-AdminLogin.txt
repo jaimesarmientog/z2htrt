@@ -1,0 +1,5 @@
+// // Admin login page - Logout button is visible in navigation even before authenticating
+open url "https://automationintesting.online/admin"
+check that page contains "Username"
+check that page contains "Password"
+check that page contains "Logout"

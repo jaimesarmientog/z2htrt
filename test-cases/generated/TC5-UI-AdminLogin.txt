@@ -1,6 +1,6 @@
-// // Admin Login - login page displays the expected form fields and actions
-open url from string with parameters "${appBaseUrl}/admin"
-check that page contains "Username"
-check that page contains "Password"
-check that page contains "Login"
-check that page contains "Logout"
+// // Admin login - SQL injection style input in Username field is rejected with Invalid credentials error
+open url "https://automationintesting.online/admin"
+enter "' OR '1'='1" into "Username"
+enter "' OR '1'='1" into "Password"
+click exactly "Login"
+check that page contains "Invalid credentials"
