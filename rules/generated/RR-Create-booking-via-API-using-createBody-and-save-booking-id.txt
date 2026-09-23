@@ -1,0 +1,2 @@
+// Sends a POST request to the booking endpoint with the createBody templated variable, extracts the returned bookingid, saves it as bookingId, and verifies a 200 HTTP response
+call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body with parameters ${createBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200

@@ -1,0 +1,2 @@
+// Navigates directly to the admin section of the application using the stored base URL
+open url from string with parameters "${appBaseUrl}/admin"

@@ -1,12 +1,6 @@
 // Lastname longer than maximum length triggers size validation error
-open url "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
+RR - Navigate to reservation form and enter guest firstname
 enter "ABCDEFGHIJKLMNOPQRS" into "Lastname"
-enter "john.smith@example.com" into "Email"
-enter "0712345678901" into "Phone"
-click "Reserve Now"
+RR - Fill email and phone then reserve
 check that page contains "size must be between 3 and 18"
 check that page does not contain "Lastname should not be blank"

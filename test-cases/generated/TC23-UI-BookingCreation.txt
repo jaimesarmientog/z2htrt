@@ -1,10 +1,5 @@
 // Blank Email triggers required validation error
-open url "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
-enter "Smith" into "Lastname"
-enter "0712345678901" into "Phone"
-click "Reserve Now"
+RR - Navigate to reservation form and enter guest firstname
+enter stored value "lastname" into "Lastname"
+RR - Fill phone then reserve
 check that page contains "must not be empty"

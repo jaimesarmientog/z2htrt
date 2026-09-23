@@ -1,9 +1,9 @@
 // // POST /auth - valid username with an invalid password returns Bad credentials
-save text starting from next line and ending with [END]
+save text with parameters starting from next line and ending with [END]
 {
-  "username": "admin",
-  "password": "invalid_pass"
+  "username": "${username}",
+  "password": "${password}"
 }
 [END] as "body"
-call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.reason" and save it as "reason" and then check that http code is 200
+RR - Submit booking request and capture rejection reason via API
 check that stored value "reason" is "Bad credentials"

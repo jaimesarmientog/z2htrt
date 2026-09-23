@@ -1,9 +1,6 @@
 // Submitting the booking form with all fields empty shows all validation errors
-open url "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-click "Reserve Now"
+RR - Navigate to reservation form
+RR - Click Reserve Now button
 check that page contains "must not be empty"
 check that page contains "size must be between 3 and 30"
 check that page contains "size must be between 3 and 18"

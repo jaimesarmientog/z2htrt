@@ -1,14 +1,8 @@
 // PUT /booking/{id} - a second authenticated update fully replaces the previous update's data (no field merging)
-save text starting from next line and ending with [END]
+RR - Authenticate as admin via API
+save text with parameters starting from next line and ending with [END]
 {
-  "username": "admin",
-  "password": "password123"
-}
-[END] as "authBody"
-call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.token" and save it as "authToken" and then check that http code is 200
-save text starting from next line and ending with [END]
-{
-  "firstname": "Mark",
+  "firstname": "${firstname5}",
   "lastname": "Original",
   "totalprice": 300,
   "depositpaid": true,
@@ -16,13 +10,13 @@ save text starting from next line and ending with [END]
     "checkin": "2023-01-01",
     "checkout": "2023-01-07"
   },
-  "additionalneeds": "WiFi"
+  "additionalneeds": "${additionalneeds4}"
 }
 [END] as "createBody"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${createBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
-save text starting from next line and ending with [END]
+RR - Create booking via API using createBody and save booking id
+save text with parameters starting from next line and ending with [END]
 {
-  "firstname": "Mark",
+  "firstname": "${firstname5}",
   "lastname": "FirstUpdate",
   "totalprice": 350,
   "depositpaid": false,
@@ -30,14 +24,14 @@ save text starting from next line and ending with [END]
     "checkin": "2023-02-01",
     "checkout": "2023-02-07"
   },
-  "additionalneeds": "WiFi"
+  "additionalneeds": "${additionalneeds4}"
 }
 [END] as "firstUpdateBody"
-call api put from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:token=${authToken}" and body with parameters ${firstUpdateBody} and get "$.lastname" and save it as "firstUpdatedLastname" and then check that http code is 200
+call api put from the string with parameters from the string with parameters "${apiBaseUrl}/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:token=${authToken}" and body with parameters ${firstUpdateBody} and get "$.lastname" and save it as "firstUpdatedLastname" and then check that http code is 200
 check that stored value "firstUpdatedLastname" equals "FirstUpdate"
-save text starting from next line and ending with [END]
+save text with parameters starting from next line and ending with [END]
 {
-  "firstname": "Mark",
+  "firstname": "${firstname5}",
   "lastname": "SecondUpdate",
   "totalprice": 400,
   "depositpaid": true,
@@ -47,5 +41,5 @@ save text starting from next line and ending with [END]
   }
 }
 [END] as "secondUpdateBody"
-call api put from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:token=${authToken}" and body with parameters ${secondUpdateBody} and get "$.lastname" and save it as "secondUpdatedLastname" and then check that http code is 200
+call api put from the string with parameters from the string with parameters "${apiBaseUrl}/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:token=${authToken}" and body with parameters ${secondUpdateBody} and get "$.lastname" and save it as "secondUpdatedLastname" and then check that http code is 200
 check that stored value "secondUpdatedLastname" equals "SecondUpdate"

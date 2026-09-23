@@ -1,6 +1,6 @@
 // // Admin login - excessively long credential values are rejected with Invalid credentials error
-open url "https://automationintesting.online/admin"
+RR - Open admin panel URL
 enter "user_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" into "Username"
 enter "pass_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" into "Password"
-click exactly "Login"
+RR - Click Login button
 check that page contains "Invalid credentials"

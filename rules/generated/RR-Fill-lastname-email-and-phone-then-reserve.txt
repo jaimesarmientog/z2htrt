@@ -1,3 +1,4 @@
+// Enters stored lastname, email, and phone values into their fields and clicks Reserve Now to submit the reservation
 enter stored value "lastname" into "Lastname"
 enter stored value "email" into "Email"
 enter stored value "phone" into "Phone"

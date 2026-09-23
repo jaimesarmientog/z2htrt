@@ -1,11 +1,5 @@
 // Phone at minimum valid length (11 digits) passes validation
-open url "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
-enter "Smith" into "Lastname"
-enter "john.smith@example.com" into "Email"
+RR - Navigate to reservation form and enter guest firstname, lastname, and email
 enter "07123456789" into "Phone"
-click "Reserve Now"
+RR - Click Reserve Now button
 check that page does not contain "size must be between 11 and 21"

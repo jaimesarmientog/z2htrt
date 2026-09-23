@@ -1,10 +1,7 @@
 // // Admin login - repeated invalid attempts each independently show Invalid credentials error
-open url "https://automationintesting.online/admin"
-enter "invalid_user" into "Username"
-enter "invalid_pass" into "Password"
-click exactly "Login"
+RR - Log in to admin panel via UI
 check that page contains "Invalid credentials"
 enter "still_wrong_user" into "Username"
 enter "still_wrong_pass" into "Password"
-click exactly "Login"
+RR - Click Login button
 check that page contains "Invalid credentials"

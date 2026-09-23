@@ -1,0 +1,2 @@
+// Sends a POST request to the auth endpoint with a templated body variable, extracts the reason field from the response, saves it as reason, and verifies a 200 HTTP response
+call api post from the string with parameters "${apiBaseUrl}/auth" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.reason" and save it as "reason" and then check that http code is 200

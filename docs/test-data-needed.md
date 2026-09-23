@@ -4,44 +4,33 @@ This refinement pass parameterized the following values. Before running these te
 
 - `appBaseUrl` → `https://automationintesting.online`
 - `apiBaseUrl` → `https://restful-booker.herokuapp.com`
-- `adminAuthCredentials`:
+- `adminLoginCredentials`:
   ```json
   {
     "username": "admin",
     "password": "password123"
   }
   ```
-- `jimBrownBookingPayload`:
-  ```json
-  {
-    "firstname": "Jim",
-    "lastname": "Brown",
-    "totalprice": 111,
-    "depositpaid": true,
-    "bookingdates": {
-      "checkin": "2024-01-01",
-      "checkout": "2024-01-05"
-    },
-    "additionalneeds": "Breakfast"
-  }
-  ```
-- `jamesBrownBookingPayload`:
-  ```json
-  {
-    "firstname": "James",
-    "lastname": "Brown",
-    "totalprice": 222,
-    "depositpaid": false,
-    "bookingdates": {
-      "checkin": "2024-02-01",
-      "checkout": "2024-02-10"
-    },
-    "additionalneeds": "Lunch"
-  }
-  ```
-- `lastname` → `Smith`
-- `phone` → `07123456789`
-- `username` → `invalid_user`
-- `password` → `invalid_pass`
+- `username` → `admin`
 - `firstname` → `John`
-- `email` → `john.doe@example.com`
+- `lastname` → `Smith`
+- `email` → `john.smith@example.com`
+- `phone` → `0712345678901`
+- `username2` → `invalid_user`
+- `password` → `invalid_pass`
+- `lastname2` → `Doe`
+- `checkin` → `2024-01-01`
+- `checkout` → `2024-01-05`
+- `additionalneeds` → `Breakfast`
+- `checkin2` → `2024-02-01`
+- `checkout2` → `2024-02-10`
+- `checkin3` → `2024-03-01`
+- `lastname3` → `Brown`
+- `firstname2` → `Jim`
+- `firstname3` → `Anna`
+- `additionalneeds2` → `Dinner`
+- `lastname4` → `Jones`
+- `firstname4` → `Carl`
+- `additionalneeds3` → `Parking`
+- `firstname5` → `Mark`
+- `additionalneeds4` → `WiFi`

@@ -1,6 +1,6 @@
 // // Admin login - empty submit shows Invalid credentials error
-open url "https://automationintesting.online/admin"
+RR - Open admin panel URL
 check that page contains "Username"
 check that page contains "Password"
-click exactly "Login"
+RR - Click Login button
 check that page contains "Invalid credentials"

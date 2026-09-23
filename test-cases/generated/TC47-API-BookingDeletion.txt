@@ -1,16 +1,16 @@
 // // Verify that DELETE /booking/{id} with an invalid (malformed) token value is rejected with 403
-save text starting from next line and ending with [END]
+save text with parameters starting from next line and ending with [END]
 {
-  "firstname": "Anna",
-  "lastname": "Smith",
+  "firstname": "${firstname3}",
+  "lastname": "${lastname}",
   "totalprice": 250,
   "depositpaid": false,
   "bookingdates": {
-    "checkin": "2024-02-01",
-    "checkout": "2024-02-10"
+    "checkin": "${checkin2}",
+    "checkout": "${checkout2}"
   },
-  "additionalneeds": "Dinner"
+  "additionalneeds": "${additionalneeds2}"
 }
 [END] as "bookingBody"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
-call api delete from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers "Cookie:token=not-a-real-token" and then check that http code is 403
+RR - Create booking via API using bookingBody and save booking id
+call api delete from the string with parameters from the string with parameters "${apiBaseUrl}/booking/${bookingId}" with headers "Cookie:token=not-a-real-token" and then check that http code is 403

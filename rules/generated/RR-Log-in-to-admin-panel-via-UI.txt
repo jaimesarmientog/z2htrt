@@ -1,0 +1,5 @@
+// Opens the admin section of the app, enters stored username and password credentials, and clicks Login
+open url from string with parameters "${appBaseUrl}/admin"
+enter stored value "username2" into "Username"
+enter stored value "password" into "Password"
+click exactly "Login"

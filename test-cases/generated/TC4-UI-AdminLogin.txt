@@ -1,5 +1,5 @@
 // // Admin login - password filled but username left empty shows Invalid credentials error
-open url "https://automationintesting.online/admin"
-enter "invalid_pass" into "Password"
-click exactly "Login"
+RR - Open admin panel URL
+enter stored value "password" into "Password"
+RR - Click Login button
 check that page contains "Invalid credentials"

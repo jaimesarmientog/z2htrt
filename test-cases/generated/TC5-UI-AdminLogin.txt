@@ -1,6 +1,6 @@
 // // Admin login - SQL injection style input in Username field is rejected with Invalid credentials error
-open url "https://automationintesting.online/admin"
+RR - Open admin panel URL
 enter "' OR '1'='1" into "Username"
 enter "' OR '1'='1" into "Password"
-click exactly "Login"
+RR - Click Login button
 check that page contains "Invalid credentials"
