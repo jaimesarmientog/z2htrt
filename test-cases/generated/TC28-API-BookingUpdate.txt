@@ -1,4 +1,4 @@
-// PUT /booking/{id} - authenticated update omitting the optional additionalneeds field succeeds with 200
+// // PUT /booking/{id} - successfully update an existing booking with a valid auth token, omitting the optional additionalneeds field
 save text starting from next line and ending with [END]
 {
   "username": "admin",
@@ -8,29 +8,30 @@ save text starting from next line and ending with [END]
 call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.token" and save it as "authToken" and then check that http code is 200
 save text starting from next line and ending with [END]
 {
-  "firstname": "Anna",
+  "firstname": "Mary",
   "lastname": "Smith",
   "totalprice": 150,
   "depositpaid": true,
   "bookingdates": {
-    "checkin": "2019-05-01",
-    "checkout": "2019-05-10"
+    "checkin": "2024-03-01",
+    "checkout": "2024-03-05"
   },
-  "additionalneeds": "Dinner"
+  "additionalneeds": "Breakfast"
 }
 [END] as "createBody"
 call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${createBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
 save text starting from next line and ending with [END]
 {
-  "firstname": "Anna",
+  "firstname": "Mary",
   "lastname": "Jones",
   "totalprice": 175,
   "depositpaid": false,
   "bookingdates": {
-    "checkin": "2019-06-01",
-    "checkout": "2019-06-10"
+    "checkin": "2024-03-10",
+    "checkout": "2024-03-15"
   }
 }
-[END] as "updateBodyNoNeeds"
-call api put from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:token=${authToken}" and body with parameters ${updateBodyNoNeeds} and get "$.lastname" and save it as "updatedLastname" and then check that http code is 200
-check that stored value "updatedLastname" equals "Jones"
+[END] as "updateBody"
+call api put from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers with parameters "Content-Type:application/json" and "Cookie:token=${authToken}" and body with parameters ${updateBody} and then check that http code is 200
+check that page contains "Jones"
+check that page contains "175"

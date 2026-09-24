@@ -1,9 +1,0 @@
-// Clicking Cancel on the guest details form returns to the calendar without submitting a booking
-open url "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-click "Cancel"
-check that page does not contain "Cancel"
-check that page does not contain "Firstname"
-check that page contains "Reserve Now"

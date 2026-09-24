@@ -1,6 +1,6 @@
-// // Admin login - empty submit shows Invalid credentials error
+// // Verify admin can log in successfully with valid credentials and is no longer shown the invalid-credentials error
 open url "https://automationintesting.online/admin"
-check that page contains "Username"
-check that page contains "Password"
+enter "admin" into "Username"
+enter "password" into "Password"
 click exactly "Login"
-check that page contains "Invalid credentials"
+check that page does not contain "Invalid credentials"

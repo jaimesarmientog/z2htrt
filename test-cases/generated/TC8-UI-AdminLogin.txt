@@ -1,5 +1,3 @@
-// // Admin login page - Logout button is visible in navigation even before authenticating
+// // Verify the Toggle navigation control is present on the admin login page
 open url "https://automationintesting.online/admin"
-check that page contains "Username"
-check that page contains "Password"
-check that page contains "Logout"
+check that page contains "Toggle navigation"

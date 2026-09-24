@@ -1,11 +1,11 @@
-// Blank Lastname triggers required and size validation errors
+// Booking Creation - Phone left blank while other fields valid shows the phone required and size validation messages
 open url "https://automationintesting.online"
 click exactly "Book now"
 click "Reserve Now"
 wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
-enter "john.smith@example.com" into "Email"
-enter "0712345678901" into "Phone"
+enter "Jane" into "Firstname"
+enter "Doe" into "Lastname"
+enter "jane.doe@example.com" into "Email"
 click "Reserve Now"
-check that page contains "Lastname should not be blank"
-check that page contains "size must be between 3 and 18"
+check that page contains "must not be empty"
+check that page contains "size must be between 11 and 21"

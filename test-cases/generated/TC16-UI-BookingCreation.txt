@@ -1,12 +1,11 @@
-// Firstname at minimum valid length (3 characters) passes validation
+// Booking Creation - Lastname above maximum length (31 characters) shows the Lastname size validation message
 open url "https://automationintesting.online"
 click exactly "Book now"
 click "Reserve Now"
 wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "Bob" into "Firstname"
-enter "Smith" into "Lastname"
-enter "john.smith@example.com" into "Email"
-enter "0712345678901" into "Phone"
+enter "Jane" into "Firstname"
+enter "Abcdefghijklmnopqrstuvwxyzabcde" into "Lastname"
+enter "jane.doe@example.com" into "Email"
+enter "07123456789" into "Phone"
 click "Reserve Now"
-check that page does not contain "size must be between 3 and 30"
-check that page does not contain "Firstname should not be blank"
+check that page contains "size must be between 3 and 30"

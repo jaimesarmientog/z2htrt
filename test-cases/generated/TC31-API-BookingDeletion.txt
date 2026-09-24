@@ -1,4 +1,4 @@
-// // Verify that DELETE /booking/{id} successfully deletes an existing booking when a valid auth token is supplied, returning 201
+// // Successfully deletes an existing booking when a valid auth token is supplied via Cookie header, returning 201
 save text starting from next line and ending with [END]
 {
   "firstname": "Jim",
@@ -6,8 +6,8 @@ save text starting from next line and ending with [END]
   "totalprice": 111,
   "depositpaid": true,
   "bookingdates": {
-    "checkin": "2024-01-01",
-    "checkout": "2024-01-05"
+    "checkin": "2018-01-01",
+    "checkout": "2019-01-01"
   },
   "additionalneeds": "Breakfast"
 }
