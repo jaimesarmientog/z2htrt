@@ -65,15 +65,25 @@ const KNOWN_BASE_URLS: Array<{ literal: string; paramName: string }> = [
 // gate, not this threshold (Jaime reviews every refinement PR as an
 // auditor before merging, deliberately not auto-merged).
 const MIN_OCCURRENCES = 2;
-// A single repeated LINE is a perfectly legitimate rule (confirmed by
-// a real, useful one-line rule already in production:
-// "RR - Authenticate as admin via API"). This used to be 2, out of
-// caution about re-extracting a JSON-block fragment — but that risk is
-// now fully handled by parseLogicalSteps' atomicity guarantee (a block
-// can never appear as an independent 1-line step to begin with), so
-// restricting length here no longer buys any safety, only misses
-// legitimate single-line rules.
+// A single repeated LINE is only a legitimate rule when it's a complete
+// unit of work — confirmed by a real, useful one-line rule already in
+// production ("RR - Authenticate as admin via API", a `call api` line).
+// A single UI interaction (a lone click or enter) gives zero benefit as
+// its own rule and must always be avoided (confirmed defect: a
+// "RR - Click Reserve Now button" rule that did nothing but
+// `click "Reserve Now"`). The loop below still starts at length 1 so
+// API-call one-liners remain reachable, but isSingleLineRuleAllowed()
+// gates which length-1 candidates are actually kept.
 const MIN_SEQUENCE_LENGTH = 1;
+
+function isApiCallStep(step: string): boolean {
+  return step.trim().startsWith("call api");
+}
+
+/** Length-1 candidates are only ever valid when the one line is a complete API call — never a bare UI interaction. */
+function isSingleLineRuleAllowed(steps: string[]): boolean {
+  return steps.length !== 1 || isApiCallStep(steps[0]);
+}
 
 const anthropic = new Anthropic();
 
@@ -192,12 +202,26 @@ interface RepeatedSequence {
 /**
  * Finds every contiguous LOGICAL-STEP sequence (length >=
  * MIN_SEQUENCE_LENGTH) that occurs at least MIN_OCCURRENCES times
- * across all files combined, then greedily keeps only the longest
- * non-overlapping matches. Two structural exclusions, both hard rules:
- * a candidate sequence containing an assertion step is never considered
- * at all, and because matching operates on logical steps (not raw
- * lines), a multi-line JSON block can only ever match/extract as one
- * whole unit — never a fragment of one.
+ * across all files combined, then greedily keeps only the
+ * non-overlapping matches — claimed MOST-SHARED-FIRST (by occurrence
+ * count, not length). This ordering is deliberate, not incidental: a
+ * real defect showed that claiming longest-first produces overlapping,
+ * near-duplicate rules whenever different subsets of test cases share
+ * different-length extensions of the same common prefix (e.g. a 4-line
+ * "navigate to form" block, a 5-line "navigate + enter firstname"
+ * block, and a 7-line "navigate + enter all 3 fields" block all
+ * independently qualifying). Claiming the most-widely-shared pattern
+ * (the 4-line block, reused everywhere) first means its lines get
+ * marked claimed before the longer variants are ever considered, so
+ * they naturally shrink to just their unclaimed tail — which either
+ * forms its own genuinely-independent rule if THAT tail also repeats,
+ * or stays inline if it doesn't. Two further hard rules: a candidate
+ * sequence containing an assertion step is never considered at all,
+ * and because matching operates on logical steps (not raw lines), a
+ * multi-line JSON block can only ever match/extract as one whole unit
+ * — never a fragment of one. A length-1 candidate is only ever kept
+ * when it's a complete API call (see isSingleLineRuleAllowed) — a lone
+ * UI interaction as its own rule gives no benefit and is always excluded.
  */
 export function findRepeatedSequences(testCases: TestCaseFile[]): RepeatedSequence[] {
   const occurrencesByKey = new Map<string, SequenceOccurrence[]>();
@@ -208,6 +232,7 @@ export function findRepeatedSequences(testCases: TestCaseFile[]): RepeatedSequen
       for (let start = 0; start + length <= tc.steps.length; start++) {
         const slice = tc.steps.slice(start, start + length);
         if (slice.some(isAssertionStep)) continue; // hard exclusion — see file header
+        if (!isSingleLineRuleAllowed(slice)) continue; // no bare UI-interaction one-liners
         const key = `${length}::${slice.join("\n")}`;
         const list = occurrencesByKey.get(key) ?? [];
         list.push({ fileIndex, startLine: start, length });
@@ -227,8 +252,9 @@ export function findRepeatedSequences(testCases: TestCaseFile[]): RepeatedSequen
     candidates.push({ steps, occurrences });
   }
 
-  // Longest sequences first, so the greedy claim pass below prefers them.
-  candidates.sort((a, b) => b.steps.length - a.steps.length);
+  // Most-shared first (by occurrence count), length as a tiebreaker —
+  // see the function doc comment above for why this order matters.
+  candidates.sort((a, b) => b.occurrences.length - a.occurrences.length || b.steps.length - a.steps.length);
 
   const claimed = new Set<string>(); // `${fileIndex}:${stepIndex}`
   const accepted: RepeatedSequence[] = [];
