@@ -1,6 +1,5 @@
-// // Admin login - SQL injection style input in Username field is rejected with Invalid credentials error
+// // Verify submitting the admin login form with a password but no username shows the same invalid credentials error as a full mismatch
 open url "https://automationintesting.online/admin"
-enter "' OR '1'='1" into "Username"
-enter "' OR '1'='1" into "Password"
+enter "invalid_pass" into "Password"
 click exactly "Login"
 check that page contains "Invalid credentials"

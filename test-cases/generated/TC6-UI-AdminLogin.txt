@@ -1,6 +1,6 @@
-// // Admin login - excessively long credential values are rejected with Invalid credentials error
+// // Verify submitting the admin login form with whitespace-only Username and Password values shows the invalid credentials error
 open url "https://automationintesting.online/admin"
-enter "user_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" into "Username"
-enter "pass_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" into "Password"
+enter " " into "Username"
+enter " " into "Password"
 click exactly "Login"
 check that page contains "Invalid credentials"

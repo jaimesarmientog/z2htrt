@@ -1,12 +1,11 @@
-// Lastname at minimum valid length (3 characters) passes validation
+// Booking Creation - clicking Cancel on the guest-details form dismisses it without submitting a booking
 open url "https://automationintesting.online"
 click exactly "Book now"
 click "Reserve Now"
 wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
+enter "Jane" into "Firstname"
 enter "Doe" into "Lastname"
-enter "john.smith@example.com" into "Email"
-enter "0712345678901" into "Phone"
-click "Reserve Now"
-check that page does not contain "size must be between 3 and 18"
-check that page does not contain "Lastname should not be blank"
+enter "jane.doe@example.com" into "Email"
+enter "07123456789" into "Phone"
+click "Cancel"
+check that page does not contain "Firstname"

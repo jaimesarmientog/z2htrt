@@ -1,12 +1,11 @@
-// Lastname longer than maximum length triggers size validation error
+// Booking Creation - Phone above maximum length (22 digits) shows the phone size validation message
 open url "https://automationintesting.online"
 click exactly "Book now"
 click "Reserve Now"
 wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
-enter "ABCDEFGHIJKLMNOPQRS" into "Lastname"
-enter "john.smith@example.com" into "Email"
-enter "0712345678901" into "Phone"
+enter "Jane" into "Firstname"
+enter "Doe" into "Lastname"
+enter "jane.doe@example.com" into "Email"
+enter "1234567890123456789012" into "Phone"
 click "Reserve Now"
-check that page contains "size must be between 3 and 18"
-check that page does not contain "Lastname should not be blank"
+check that page contains "size must be between 11 and 21"

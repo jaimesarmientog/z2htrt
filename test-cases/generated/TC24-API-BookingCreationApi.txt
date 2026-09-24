@@ -1,0 +1,18 @@
+// // Create a booking with a full valid payload including the optional additionalneeds field and verify a 200 response with a bookingid and echoed booking details
+save text starting from next line and ending with [END]
+{
+  "firstname": "James",
+  "lastname": "Brown",
+  "totalprice": 111,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2025-01-01",
+    "checkout": "2025-01-05"
+  },
+  "additionalneeds": "Breakfast"
+}
+[END] as "body"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.bookingid" and save it as "bookingId" and get "$.booking.firstname" and save it as "respFirstname" and get "$.booking.lastname" and save it as "respLastname" and then check that http code is 200
+check that stored value "bookingId" is not blank
+check that stored value "respFirstname" equals "James"
+check that stored value "respLastname" equals "Brown"
