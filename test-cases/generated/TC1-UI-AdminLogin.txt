@@ -1,5 +1,5 @@
 // // Verify admin can log in successfully with valid credentials and is no longer shown the invalid-credentials error
-open url "https://automationintesting.online/admin"
+open url from string with parameters "${appBaseUrl}/admin"
 enter "admin" into "Username"
 enter "password" into "Password"
 click exactly "Login"

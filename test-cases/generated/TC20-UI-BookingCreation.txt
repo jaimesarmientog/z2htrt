@@ -1,11 +1,7 @@
 // Booking Creation - Phone above maximum length (22 digits) shows the phone size validation message
-open url "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "Jane" into "Firstname"
-enter "Doe" into "Lastname"
-enter "jane.doe@example.com" into "Email"
+RR - Open app and start reservation
+enter stored value "firstname" into "Firstname"
+RR - Enter guest lastname and email
 enter "1234567890123456789012" into "Phone"
 click "Reserve Now"
 check that page contains "size must be between 11 and 21"

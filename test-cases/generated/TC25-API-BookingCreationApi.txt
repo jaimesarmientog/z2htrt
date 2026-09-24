@@ -11,7 +11,7 @@ save text starting from next line and ending with [END]
   }
 }
 [END] as "body"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.bookingid" and save it as "bookingId" and get "$.booking.firstname" and save it as "respFirstname" and get "$.booking.depositpaid" and save it as "respDepositpaid" and then check that http code is 200
+call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.bookingid" and save it as "bookingId" and get "$.booking.firstname" and save it as "respFirstname" and get "$.booking.depositpaid" and save it as "respDepositpaid" and then check that http code is 200
 check that stored value "bookingId" is not blank
 check that stored value "respFirstname" equals "Sarah"
 check that stored value "respDepositpaid" equals "false"

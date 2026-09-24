@@ -1,2 +1,3 @@
+// Navigates to the admin section of the app and enters the stored username into the Username field
 open url from string with parameters "${appBaseUrl}/admin"
 enter stored value "username" into "Username"

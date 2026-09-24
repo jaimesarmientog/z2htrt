@@ -1,11 +1,6 @@
 // Booking Creation - Firstname below minimum length (2 characters) shows the Firstname size validation message
-open url "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+RR - Open app and start reservation
 enter "Al" into "Firstname"
-enter "Doe" into "Lastname"
-enter "jane.doe@example.com" into "Email"
-enter "07123456789" into "Phone"
-click "Reserve Now"
+RR - Enter guest lastname and email
+RR - Enter guest phone and confirm reservation
 check that page contains "size must be between 3 and 18"

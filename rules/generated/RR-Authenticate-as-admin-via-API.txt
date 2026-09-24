@@ -1,1 +1,2 @@
+// Calls the auth API endpoint with admin credentials, extracts the returned token, and saves it as authToken after verifying a 200 response
 call api post from the string with parameters "${apiBaseUrl}/auth" with headers "Content-Type:application/json" and body from stored value "adminAuthCredentials" and get "$.token" and save it as "authToken" and then check that http code is 200

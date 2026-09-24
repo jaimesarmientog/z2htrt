@@ -1,10 +1,6 @@
 // Booking Creation - Email left blank while other fields valid shows the email required validation message
-open url "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "Jane" into "Firstname"
-enter "Doe" into "Lastname"
-enter "07123456789" into "Phone"
-click "Reserve Now"
+RR - Open app and start reservation
+enter stored value "firstname" into "Firstname"
+enter stored value "lastname" into "Lastname"
+RR - Enter guest phone and confirm reservation
 check that page contains "must not be empty"

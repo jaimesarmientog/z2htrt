@@ -1,3 +1,3 @@
 // // Verify the Toggle navigation control is present on the admin login page
-open url "https://automationintesting.online/admin"
+open url from string with parameters "${appBaseUrl}/admin"
 check that page contains "Toggle navigation"

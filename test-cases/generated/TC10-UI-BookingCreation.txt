@@ -1,8 +1,5 @@
 // Booking Creation - submitting the guest-details form completely empty shows all required-field and size validation messages
-open url "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+RR - Open app and start reservation
 click "Reserve Now"
 check that page contains "size must be between 11 and 21"
 check that page contains "Lastname should not be blank"

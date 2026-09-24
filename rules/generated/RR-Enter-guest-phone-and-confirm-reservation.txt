@@ -1,0 +1,3 @@
+// Fills in the Phone field with a stored value and clicks Reserve Now to submit the reservation form
+enter stored value "phone" into "Phone"
+click "Reserve Now"

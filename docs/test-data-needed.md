@@ -11,7 +11,7 @@ This refinement pass parameterized the following values. Before running these te
     "password": "password123"
   }
   ```
-- `jimBrownBookingPayload`:
+- `jimBrownBreakfastBookingPayload`:
   ```json
   {
     "firstname": "Jim",
@@ -25,23 +25,39 @@ This refinement pass parameterized the following values. Before running these te
     "additionalneeds": "Breakfast"
   }
   ```
-- `jamesBrownBookingPayload`:
+- `jamesAllenDinnerBookingPayload`:
   ```json
   {
     "firstname": "James",
-    "lastname": "Brown",
+    "lastname": "Allen",
     "totalprice": 222,
     "depositpaid": false,
     "bookingdates": {
       "checkin": "2024-02-01",
       "checkout": "2024-02-10"
     },
-    "additionalneeds": "Lunch"
+    "additionalneeds": "Dinner"
   }
   ```
-- `lastname` → `Smith`
+- `jimBrownBreakfastLegacyDatesBookingPayload`:
+  ```json
+  {
+    "firstname": "Jim",
+    "lastname": "Brown",
+    "totalprice": 111,
+    "depositpaid": true,
+    "bookingdates": {
+      "checkin": "2018-01-01",
+      "checkout": "2019-01-01"
+    },
+    "additionalneeds": "Breakfast"
+  }
+  ```
+- `lastname` → `Doe`
+- `email` → `jane.doe@example.com`
 - `phone` → `07123456789`
+- `firstname` → `Jane`
 - `username` → `invalid_user`
 - `password` → `invalid_pass`
-- `firstname` → `John`
-- `email` → `john.doe@example.com`
+- `additionalneeds` → `Breakfast`
+- `firstname2` → `Mary`

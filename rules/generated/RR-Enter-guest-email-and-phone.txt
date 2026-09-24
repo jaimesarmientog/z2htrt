@@ -1,0 +1,3 @@
+// Fills in the Email and Phone fields on the guest details form using previously stored values
+enter stored value "email" into "Email"
+enter stored value "phone" into "Phone"

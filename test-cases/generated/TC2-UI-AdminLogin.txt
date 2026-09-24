@@ -1,4 +1,4 @@
 // // Verify submitting the admin login form with both Username and Password left empty shows the invalid credentials error
-open url "https://automationintesting.online/admin"
+open url from string with parameters "${appBaseUrl}/admin"
 click exactly "Login"
 check that page contains "Invalid credentials"

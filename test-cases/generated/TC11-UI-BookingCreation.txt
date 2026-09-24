@@ -1,11 +1,6 @@
 // Booking Creation - Firstname left blank while other fields valid shows Firstname-specific validation messages
-open url "https://automationintesting.online"
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "Doe" into "Lastname"
-enter "jane.doe@example.com" into "Email"
-enter "07123456789" into "Phone"
-click "Reserve Now"
+RR - Open app and start reservation
+RR - Enter guest lastname and email
+RR - Enter guest phone and confirm reservation
 check that page contains "Firstname should not be blank"
 check that page contains "size must be between 3 and 18"

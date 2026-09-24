@@ -1,5 +1,4 @@
 // // Verify submitting the admin login form with a password but no username shows the same invalid credentials error as a full mismatch
-open url "https://automationintesting.online/admin"
-enter "invalid_pass" into "Password"
-click exactly "Login"
+open url from string with parameters "${appBaseUrl}/admin"
+RR - Enter admin password and log in
 check that page contains "Invalid credentials"

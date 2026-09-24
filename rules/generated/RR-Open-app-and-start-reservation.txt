@@ -1,5 +1,5 @@
+// Opens the application base URL, clicks Book now, clicks Reserve Now, and waits until the Cancel option appears to confirm the reservation flow has started
 open url from stored value "appBaseUrl"
 click exactly "Book now"
-wait 1 sec up to 10 times until page contains "Reserve Now"
 click "Reserve Now"
 wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"

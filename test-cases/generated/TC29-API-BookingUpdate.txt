@@ -1,16 +1,3 @@
 // // PUT /booking/{id} - reject an update request when no auth Cookie/token header is provided (expect 403 Forbidden)
-save text starting from next line and ending with [END]
-{
-  "firstname": "Jim",
-  "lastname": "Brown",
-  "totalprice": 111,
-  "depositpaid": true,
-  "bookingdates": {
-    "checkin": "2024-01-01",
-    "checkout": "2024-01-05"
-  },
-  "additionalneeds": "Breakfast"
-}
-[END] as "updateBody"
-call api put "https://restful-booker.herokuapp.com/booking/999999" with headers "Content-Type:application/json" and body with parameters ${updateBody} and then check that http code is 403
+call api put from the string with parameters "${apiBaseUrl}/booking/999999" with headers "Content-Type:application/json" and body from stored value "jimBrownBreakfastBookingPayload" and then check that http code is 403
 check that page contains "Forbidden"

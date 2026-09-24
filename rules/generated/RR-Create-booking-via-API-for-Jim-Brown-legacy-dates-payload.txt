@@ -1,0 +1,2 @@
+// Calls the booking API endpoint with the Jim Brown breakfast legacy dates booking payload, extracts the returned booking ID, and saves it after verifying a 200 response
+call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body from stored value "jimBrownBreakfastLegacyDatesBookingPayload" and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
