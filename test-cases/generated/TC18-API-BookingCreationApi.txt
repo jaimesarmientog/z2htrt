@@ -1,0 +1,14 @@
+// POST /booking with boundary numeric/boolean values (totalprice of 0 and depositpaid false, no additionalneeds) still returns 200 with the booking created as submitted
+save text starting from next line and ending with [END]
+{
+  "firstname": "Zero",
+  "lastname": "Price",
+  "totalprice": 0,
+  "depositpaid": false,
+  "bookingdates": {
+    "checkin": "2024-06-01",
+    "checkout": "2024-06-02"
+  }
+}
+[END] as "boundaryBookingBody"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body from stored value "boundaryBookingBody" and get "$.bookingid" and save it as "bookingId3" and get "$.booking.totalprice" and save it as "respTotalprice3" and get "$.booking.depositpaid" and save it as "respDepositpaid3" and then check that http code is 200

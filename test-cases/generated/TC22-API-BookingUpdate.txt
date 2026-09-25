@@ -1,0 +1,15 @@
+// // PUT /booking/{id} with an invalid/bogus auth token value in the Cookie header is rejected with 403
+save text starting from next line and ending with [END]
+{
+  "firstname": "Jim",
+  "lastname": "Brown",
+  "totalprice": 111,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2024-01-01",
+    "checkout": "2024-01-05"
+  },
+  "additionalneeds": "Breakfast"
+}
+[END] as "updateBookingBody"
+call api put "https://restful-booker.herokuapp.com/booking/999999" with headers "Content-Type:application/json" and "Cookie:token=invalid-token-value" and body with parameters ${updateBookingBody} and then check that http code is 403

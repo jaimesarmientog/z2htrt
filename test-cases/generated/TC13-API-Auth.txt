@@ -1,4 +1,4 @@
-// POST /auth - valid credentials returns a token with HTTP 200
+// // Successful authentication with valid credentials returns a token in the response
 save text starting from next line and ending with [END]
 {
   "username": "admin",
@@ -6,4 +6,4 @@ save text starting from next line and ending with [END]
 }
 [END] as "authBody"
 call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.token" and save it as "authToken" and then check that http code is 200
-check that page contains "token"
+check that stored value "authToken" is not empty

@@ -1,5 +1,4 @@
-// // Verify submitting the admin login form with a password but no username shows the same invalid credentials error as a full mismatch
-open url "https://automationintesting.online/admin"
+// Submitting the Admin Login form with only Password filled in shows the same Invalid credentials error as a full invalid submission
 enter "invalid_pass" into "Password"
 click exactly "Login"
 check that page contains "Invalid credentials"
