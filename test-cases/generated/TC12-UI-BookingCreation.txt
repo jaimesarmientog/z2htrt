@@ -1,11 +1,11 @@
-// Booking Creation - Firstname below minimum length (2 characters) shows the Firstname size validation message
-open url "https://automationintesting.online"
+// // Clicking "Cancel" on the filled-in guest-details form discards the in-progress booking and returns to the calendar view, where the "Cancel" button is no longer present
 click exactly "Book now"
 click "Reserve Now"
 wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "Al" into "Firstname"
+enter "Jane" into "Firstname"
 enter "Doe" into "Lastname"
 enter "jane.doe@example.com" into "Email"
-enter "07123456789" into "Phone"
-click "Reserve Now"
-check that page contains "size must be between 3 and 18"
+enter "12345678901" into "Phone"
+click "Cancel"
+check that page contains "Reserve Now"
+check that page does not contain "Cancel"

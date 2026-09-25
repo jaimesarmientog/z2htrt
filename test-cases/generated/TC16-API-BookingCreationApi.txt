@@ -1,0 +1,14 @@
+// POST /booking creates a new booking without the optional additionalneeds field and returns 200 with a bookingid and echoed booking data
+save text starting from next line and ending with [END]
+{
+  "firstname": "Sarah",
+  "lastname": "Connor",
+  "totalprice": 250,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2024-03-10",
+    "checkout": "2024-03-15"
+  }
+}
+[END] as "bookingBodyNoNeeds"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body from stored value "bookingBodyNoNeeds" and get "$.bookingid" and save it as "bookingId2" and get "$.booking.firstname" and save it as "respFirstname2" and get "$.booking.lastname" and save it as "respLastname2" and get "$.booking.totalprice" and save it as "respTotalprice2" and then check that http code is 200

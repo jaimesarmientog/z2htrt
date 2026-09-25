@@ -1,0 +1,3 @@
+// // Clicking the lowercase "Book now" button on a room card navigates to that room's booking/calendar page, where the "Reserve Now" button becomes available
+click exactly "Book now"
+check that page contains "Reserve Now"

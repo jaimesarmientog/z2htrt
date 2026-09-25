@@ -1,5 +1,6 @@
-// // Verify the Logout nav button is visible and usable on the admin login page even before any authentication, and returns the user to the homepage
-open url "https://automationintesting.online/admin"
-check that page contains "Logout"
+// Clicking Logout on the Admin Login page before authenticating simply returns to the homepage rather than indicating a successful login
+check that page contains "Username"
+check that page contains "Password"
 click exactly "Logout"
+check that page does not contain "Username"
 check that page does not contain "Password"

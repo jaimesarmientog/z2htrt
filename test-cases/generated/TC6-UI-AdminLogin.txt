@@ -1,6 +1,2 @@
-// // Verify submitting the admin login form with whitespace-only Username and Password values shows the invalid credentials error
-open url "https://automationintesting.online/admin"
-enter " " into "Username"
-enter " " into "Password"
-click exactly "Login"
-check that page contains "Invalid credentials"
+// Logout button is visible in the nav on the Admin Login page even before authenticating
+check that page contains exactly "Logout"

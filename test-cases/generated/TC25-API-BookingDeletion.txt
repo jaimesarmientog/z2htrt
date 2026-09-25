@@ -1,0 +1,23 @@
+// DELETE /booking/{id} - request with an invalid/malformed auth token is rejected with 403
+save text starting from next line and ending with [END]
+{
+  "username": "admin",
+  "password": "password123"
+}
+[END] as "authBody"
+call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body from stored value "authBody" and get "$.token" and save it as "authToken" and then check that http code is 200
+save text starting from next line and ending with [END]
+{
+  "firstname": "Anna",
+  "lastname": "Smith",
+  "totalprice": 250,
+  "depositpaid": false,
+  "bookingdates": {
+    "checkin": "2024-02-01",
+    "checkout": "2024-02-10"
+  },
+  "additionalneeds": "Lunch"
+}
+[END] as "bookingBody"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body from stored value "bookingBody" and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
+call api delete from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers with parameters "Cookie:token=invalid_token_value_123" and then check that http code is 403
