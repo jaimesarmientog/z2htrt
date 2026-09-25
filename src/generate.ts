@@ -353,7 +353,10 @@ function buildSystemPrompt(vendorSkills: string): string {
 function buildUserPrompt(unit: GenerationUnit): string {
   const kindNote =
     unit.kind === "UI"
-      ? "This is a web UI flow. Steps should be element-interaction based (click/enter/check that page contains …)."
+      ? "This is a web UI flow. Steps should be element-interaction based (click/enter/check that page contains …). " +
+        "Do not include any `open url` step for this app — the suite loads its base URL automatically before every " +
+        "test. If this flow needs a specific page (e.g. the admin login page), reach it via the UI interaction " +
+        "described in this flow's own notes/actions below (e.g. clicking a confirmed nav link), never a direct URL."
       : "This is an API flow. Steps should use the `call api …` syntax shown in the syntax notes. If this " +
         "endpoint requires auth (authRequired: true), inline the full authentication sequence directly in " +
         "each test case that needs it (call POST /auth, extract the token, then use it) — do not assume a " +

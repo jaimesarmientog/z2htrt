@@ -85,6 +85,18 @@ function isSingleLineRuleAllowed(steps: string[]): boolean {
   return steps.length !== 1 || isApiCallStep(steps[0]);
 }
 
+/**
+ * A sequence made ENTIRELY of "enter" actions (data entry, no
+ * navigation/clicks/API calls) gives no real reuse benefit as a rule —
+ * confirmed by Jaime: "if a rule is set to enter name and enter
+ * lastname I'd rather have those as test steps." Excluded regardless of
+ * length or occurrence count. A sequence that MIXES enter actions with
+ * other kinds of steps (a click, a navigation) is unaffected.
+ */
+function isEnterOnlySequence(steps: string[]): boolean {
+  return steps.every((s) => s.trim().toLowerCase().startsWith("enter "));
+}
+
 const anthropic = new Anthropic();
 
 // ---------------------------------------------------------------------
@@ -233,6 +245,7 @@ export function findRepeatedSequences(testCases: TestCaseFile[]): RepeatedSequen
         const slice = tc.steps.slice(start, start + length);
         if (slice.some(isAssertionStep)) continue; // hard exclusion — see file header
         if (!isSingleLineRuleAllowed(slice)) continue; // no bare UI-interaction one-liners
+        if (isEnterOnlySequence(slice)) continue; // no pure data-entry sequences, regardless of length
         const key = `${length}::${slice.join("\n")}`;
         const list = occurrencesByKey.get(key) ?? [];
         list.push({ fileIndex, startLine: start, length });
@@ -533,7 +546,49 @@ interface SharedJsonBodyCandidate {
   canonicalKey: string;
   /** The original, human-formatted interior text from the first occurrence — used as the Test Data example value. */
   displayText: string;
+  /** The parsed value itself, kept so a redacted version can be re-serialized for the manifest without exposing secret fields. */
+  parsedValue: unknown;
   occurrences: SharedJsonBodyOccurrence[];
+}
+
+/**
+ * Key names that indicate sensitive data — a password, token, or other
+ * secret must NEVER be written in plaintext into docs/test-data-needed.md,
+ * since that file gets committed to the repo. Matched case-insensitively
+ * against the JSON key or entered-into field label (both already
+ * camelCased by the time this is checked). Deliberately a small, precise
+ * set rather than a broad substring match, to avoid false positives.
+ */
+const SECRET_KEY_PATTERNS = [/password/i, /passwd/i, /pwd/i, /secret/i, /token/i, /api[_-]?key/i, /access[_-]?key/i, /credential/i];
+
+export function isSecretContextName(name: string): boolean {
+  return SECRET_KEY_PATTERNS.some((p) => p.test(name));
+}
+
+export const SECRET_REDACTION_PLACEHOLDER = "<sensitive — set manually in Test Data, value not shown here>";
+
+/**
+ * Recursively replaces any leaf value whose key matches
+ * isSecretContextName with SECRET_REDACTION_PLACEHOLDER — used only when
+ * building the Test Data manifest display, never when writing the
+ * actual parameterized value into test case/rule files (that path
+ * already correctly uses a ${var} reference instead of the literal).
+ */
+export function redactSecrets(value: unknown, parentKey?: string): unknown {
+  if (parentKey && isSecretContextName(parentKey) && typeof value === "string") {
+    return SECRET_REDACTION_PLACEHOLDER;
+  }
+  if (Array.isArray(value)) {
+    return value.map((v) => redactSecrets(v, parentKey));
+  }
+  if (value && typeof value === "object") {
+    const result: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value)) {
+      result[k] = redactSecrets(v, k);
+    }
+    return result;
+  }
+  return value;
 }
 
 /**
@@ -581,7 +636,7 @@ export function findSharedJsonBodyCandidates(containers: StepContainer[]): Share
       if (existing) {
         existing.occurrences.push(occ);
       } else {
-        byKey.set(canonicalKey, { canonicalKey, displayText, occurrences: [occ] });
+        byKey.set(canonicalKey, { canonicalKey, displayText, parsedValue: parsed, occurrences: [occ] });
       }
     });
   });
@@ -988,18 +1043,23 @@ async function main(): Promise<void> {
   const sharedJsonBodyCandidates = findSharedJsonBodyCandidates(testCases);
   const sharedJsonBodyNames = await nameSharedJsonBodies(sharedJsonBodyCandidates);
   applySharedJsonBodyReplacements(testCases, sharedJsonBodyCandidates, sharedJsonBodyNames);
+  // Redacted for the MANIFEST DISPLAY ONLY — the actual test case/rule
+  // files never contained the literal secret in the first place once
+  // shared (they reference the variable by name), but this manifest
+  // file gets committed to the repo, so a password/token/secret inside
+  // a shared body must never be shown here in plaintext.
   const sharedJsonBodyManifestEntries: TestDataNeeded[] = sharedJsonBodyCandidates.map((c, i) => ({
     name: sharedJsonBodyNames[i],
-    exampleValue: c.displayText,
+    exampleValue: JSON.stringify(redactSecrets(c.parsedValue), null, 2),
   }));
 
   const dataValueCandidates = findDataValueCandidates(testCases);
   const dataValueVarNames = assignVariableNames(dataValueCandidates);
   applyDataValueReplacements(testCases, dataValueCandidates, dataValueVarNames);
-  const dataValueManifestEntries: TestDataNeeded[] = dataValueCandidates.map((c) => ({
-    name: dataValueVarNames.get(c)!,
-    exampleValue: c.value,
-  }));
+  const dataValueManifestEntries: TestDataNeeded[] = dataValueCandidates.map((c) => {
+    const name = dataValueVarNames.get(c)!;
+    return { name, exampleValue: isSecretContextName(name) ? SECRET_REDACTION_PLACEHOLDER : c.value };
+  });
 
   const urlManifestEntries = parameterizeBaseUrls(testCases);
 
