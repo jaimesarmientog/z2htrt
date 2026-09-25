@@ -1,11 +1,9 @@
 // // Happy path: submitting valid Firstname, Lastname, Email, and Phone on the guest-details form after advancing from the calendar succeeds without triggering any of the observed validation error messages
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "Jane" into "Firstname"
-enter "Doe" into "Lastname"
-enter "jane.doe@example.com" into "Email"
-enter "12345678901" into "Phone"
+RR - Book and confirm reservation
+enter stored value "firstname" into "Firstname"
+enter stored value "lastname" into "Lastname"
+enter stored value "email" into "Email"
+enter stored value "phone" into "Phone"
 click "Reserve Now"
 check that page does not contain "must not be empty"
 check that page does not contain "Firstname should not be blank"

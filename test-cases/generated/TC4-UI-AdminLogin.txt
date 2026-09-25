@@ -1,4 +1,4 @@
 // Submitting the Admin Login form with only Username filled in shows the same Invalid credentials error as a full invalid submission
-enter "invalid_user" into "Username"
+enter stored value "username" into "Username"
 click exactly "Login"
 check that page contains "Invalid credentials"

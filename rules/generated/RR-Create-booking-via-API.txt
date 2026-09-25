@@ -1,0 +1,2 @@
+// Sends a POST request to the booking endpoint with a valid booking payload and saves the returned bookingid, verifying a 200 http response
+call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body from stored value "validBookingPayload" and get "$.bookingid" and save it as "bookingId" and then check that http code is 200

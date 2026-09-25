@@ -2,16 +2,15 @@
 
 This refinement pass parameterized the following values. Before running these test cases, add each of these to the suite's **Test Data** section in the testRigor UI:
 
-- `appBaseUrl` → `https://automationintesting.online`
 - `apiBaseUrl` → `https://restful-booker.herokuapp.com`
 - `adminAuthCredentials`:
   ```json
   {
     "username": "admin",
-    "password": "password123"
+    "password": "<sensitive — set manually in Test Data, value not shown here>"
   }
   ```
-- `jimBrownBookingPayload`:
+- `validBookingPayload`:
   ```json
   {
     "firstname": "Jim",
@@ -25,23 +24,13 @@ This refinement pass parameterized the following values. Before running these te
     "additionalneeds": "Breakfast"
   }
   ```
-- `jamesBrownBookingPayload`:
-  ```json
-  {
-    "firstname": "James",
-    "lastname": "Brown",
-    "totalprice": 222,
-    "depositpaid": false,
-    "bookingdates": {
-      "checkin": "2024-02-01",
-      "checkout": "2024-02-10"
-    },
-    "additionalneeds": "Lunch"
-  }
-  ```
-- `lastname` → `Smith`
-- `phone` → `07123456789`
+- `firstname` → `Jane`
+- `lastname` → `Doe`
+- `email` → `jane.doe@example.com`
+- `phone` → `12345678901`
 - `username` → `invalid_user`
-- `password` → `invalid_pass`
-- `firstname` → `John`
-- `email` → `john.doe@example.com`
+- `password` → `<sensitive — set manually in Test Data, value not shown here>`
+- `firstname2` → `James`
+- `lastname2` → `Brown`
+- `checkin` → `2024-02-01`
+- `additionalneeds` → `Lunch`
