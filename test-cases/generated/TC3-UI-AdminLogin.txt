@@ -1,4 +1,5 @@
-// Submitting the Admin Login form with invalid username and password shows Invalid credentials error
+// Submitting the admin login form with invalid username and password shows Invalid credentials
+click "Admin"
 enter "invalid_user" into "Username"
 enter "invalid_pass" into "Password"
 click exactly "Login"

@@ -1,0 +1,15 @@
+// PUT /booking/{id} - request with an invalid/garbage auth token value is rejected with HTTP 403
+save text starting from next line and ending with [END]
+{
+  "firstname": "Jim",
+  "lastname": "Brown",
+  "totalprice": 111,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2024-01-01",
+    "checkout": "2024-01-05"
+  },
+  "additionalneeds": "Breakfast"
+}
+[END] as "updateBody"
+call api put "https://restful-booker.herokuapp.com/booking/999999" with headers "Content-Type:application/json" and "Cookie:token=this-is-not-a-real-token" and body with parameters ${updateBody} and then check that http code is 403

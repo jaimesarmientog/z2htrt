@@ -1,0 +1,16 @@
+// DELETE /booking/{id} - request with an invalid/malformed token cookie on an existing booking id is rejected with 403
+save text starting from next line and ending with [END]
+{
+  "firstname": "Bob",
+  "lastname": "Jones",
+  "totalprice": 175,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2024-05-01",
+    "checkout": "2024-05-04"
+  },
+  "additionalneeds": "Dinner"
+}
+[END] as "bookingBody"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
+call api delete from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" with headers "Cookie:token=invalid-token-value-123" and then check that http code is 403

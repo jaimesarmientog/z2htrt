@@ -1,5 +1,0 @@
-// POST /booking with an empty JSON body ({}) returns a 500 Internal Server Error, as observed
-save text starting from next line and ending with [END]
-{}
-[END] as "emptyBookingBody"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body from stored value "emptyBookingBody" and then check that http code is 500

@@ -1,3 +1,4 @@
-// Submitting the Admin Login form with no fields filled in shows Invalid credentials error
+// Submitting the admin login form with both fields empty shows Invalid credentials
+click "Admin"
 click exactly "Login"
 check that page contains "Invalid credentials"

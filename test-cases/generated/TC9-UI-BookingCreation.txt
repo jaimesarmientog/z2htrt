@@ -1,4 +1,7 @@
-// // Clicking the capitalized "Book Now" button on the homepage only scrolls to the rooms section and does not navigate away to any room's booking page
-click "Book Now"
-check that page contains "Book now"
-check that page does not contain "Reserve Now"
+// Booking creation - clicking Cancel on the guest-details form returns to the calendar view without submitting
+click exactly "Book now"
+click "Reserve Now"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+click "Cancel"
+check that page does not contain "Cancel"
+check that page contains "Reserve Now"

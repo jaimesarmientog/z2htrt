@@ -1,0 +1,9 @@
+// POST /auth - empty username and password strings return HTTP 200 with a Bad credentials reason
+save text starting from next line and ending with [END]
+{
+  "username": "",
+  "password": ""
+}
+[END] as "authBody"
+call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.reason" and save it as "authReason" and then check that http code is 200
+check that stored value "authReason" equals "Bad credentials"

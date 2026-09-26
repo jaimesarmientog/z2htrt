@@ -1,4 +1,4 @@
-// // PUT /booking/{id} with an invalid/bogus auth token value in the Cookie header is rejected with 403
+// PUT /booking/{id} - request with no Cookie/token header is rejected with HTTP 403 and a Forbidden response
 save text starting from next line and ending with [END]
 {
   "firstname": "Jim",
@@ -11,5 +11,6 @@ save text starting from next line and ending with [END]
   },
   "additionalneeds": "Breakfast"
 }
-[END] as "updateBookingBody"
-call api put "https://restful-booker.herokuapp.com/booking/999999" with headers "Content-Type:application/json" and "Cookie:token=invalid-token-value" and body with parameters ${updateBookingBody} and then check that http code is 403
+[END] as "updateBody"
+call api put "https://restful-booker.herokuapp.com/booking/999999" with headers "Content-Type:application/json" and body with parameters ${updateBody} and get "$" and save it as "responseBody" and then check that http code is 403
+check that stored value "responseBody" contains "Forbidden"
