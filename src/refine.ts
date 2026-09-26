@@ -97,6 +97,20 @@ function isEnterOnlySequence(steps: string[]): boolean {
   return steps.every((s) => s.trim().toLowerCase().startsWith("enter "));
 }
 
+/**
+ * A sequence made ENTIRELY of variable-declaration steps (`save text
+ * ... as ...`, `save value ... as ...`) gives no behavioral reuse value
+ * as a rule — it's just data setup, not an action. Confirmed by Jaime:
+ * "no reusable rules must be declared only to set variables." A `call
+ * api ...` step is NOT excluded by this even though it also contains
+ * "and save it as X" — that's a genuine action (making the call) that
+ * happens to save a result, not a bare declaration; the check is on the
+ * step's own leading verb, not whether "save" appears anywhere in it.
+ */
+function isVariableSettingOnlySequence(steps: string[]): boolean {
+  return steps.every((s) => s.trim().toLowerCase().startsWith("save "));
+}
+
 const anthropic = new Anthropic();
 
 // ---------------------------------------------------------------------
@@ -246,6 +260,7 @@ export function findRepeatedSequences(testCases: TestCaseFile[]): RepeatedSequen
         if (slice.some(isAssertionStep)) continue; // hard exclusion — see file header
         if (!isSingleLineRuleAllowed(slice)) continue; // no bare UI-interaction one-liners
         if (isEnterOnlySequence(slice)) continue; // no pure data-entry sequences, regardless of length
+        if (isVariableSettingOnlySequence(slice)) continue; // no rules that only declare variables
         const key = `${length}::${slice.join("\n")}`;
         const list = occurrencesByKey.get(key) ?? [];
         list.push({ fileIndex, startLine: start, length });
@@ -443,6 +458,8 @@ interface StepContainer {
 interface TestDataNeeded {
   name: string;
   exampleValue: string;
+  /** True for a password/token/etc. — the real value IS shown (the engineer setting up Test Data needs it), but writeTestDataManifest adds a note that it must be configured as a hidden value in testRigor. */
+  sensitive?: boolean;
 }
 
 interface DataValueOccurrence {
@@ -617,6 +634,25 @@ function canonicalizeJson(value: unknown): string {
  * parsed value, not raw text, so two blocks with the same data but
  * different formatting still correctly match.
  */
+/**
+ * Recursively checks whether ANY key anywhere in a parsed JSON value is
+ * secret-like. A body containing a password/token/etc. must NEVER be
+ * promoted to a single shared Test Data blob (that would either bury a
+ * real secret inside a committed manifest file with no special
+ * handling, or require a confusing partial-redaction of an otherwise
+ * per-test-case value) — the secret field is handled separately, by
+ * unconditional per-field parameterization (see findDataValueCandidates
+ * below), while the surrounding body stays exactly where it was
+ * authored, in its own test case.
+ */
+export function containsSecretKey(value: unknown): boolean {
+  if (Array.isArray(value)) return value.some(containsSecretKey);
+  if (value && typeof value === "object") {
+    return Object.entries(value).some(([k, v]) => isSecretContextName(k) || containsSecretKey(v));
+  }
+  return false;
+}
+
 export function findSharedJsonBodyCandidates(containers: StepContainer[]): SharedJsonBodyCandidate[] {
   const byKey = new Map<string, SharedJsonBodyCandidate>();
 
@@ -625,6 +661,7 @@ export function findSharedJsonBodyCandidates(containers: StepContainer[]): Share
       if (!isJsonBlockStep(step)) return;
       const parsed = tryParseJsonBlock(step);
       if (parsed === null) return; // not valid JSON (e.g. already parameterized elsewhere) — skip
+      if (containsSecretKey(parsed)) return; // never share a body containing a secret — see containsSecretKey
 
       const canonicalKey = canonicalizeJson(parsed);
       const lines = step.split("\n");
@@ -818,7 +855,11 @@ export function findDataValueCandidates(testCases: StepContainer[]): DataValueCa
     });
   });
 
-  return [...byKey.values()].filter((c) => c.occurrences.length >= MIN_OCCURRENCES);
+  // Secrets are exempt from the occurrence threshold: an ordinary value
+  // only earns Test Data promotion by being genuinely reused, but a
+  // password/token must never sit hardcoded even if it's only used
+  // once — that's a security concern, not a reuse-value judgment.
+  return [...byKey.values()].filter((c) => c.occurrences.length >= MIN_OCCURRENCES || isSecretContextName(c.contextName));
 }
 
 /** Disambiguates variable names when two different values want the same context-derived name. */
@@ -979,10 +1020,11 @@ async function writeTestDataManifest(entries: TestDataNeeded[]): Promise<void> {
     "",
   ];
   for (const e of entries) {
+    const sensitiveNote = e.sensitive ? " — **⚠️ set up as a HIDDEN value in testRigor**" : "";
     if (e.exampleValue.includes("\n")) {
-      lines.push(`- \`${e.name}\`:`, "  ```json", ...e.exampleValue.split("\n").map((l) => `  ${l}`), "  ```");
+      lines.push(`- \`${e.name}\`${sensitiveNote}:`, "  ```json", ...e.exampleValue.split("\n").map((l) => `  ${l}`), "  ```");
     } else {
-      lines.push(`- \`${e.name}\` → \`${e.exampleValue}\``);
+      lines.push(`- \`${e.name}\` → \`${e.exampleValue}\`${sensitiveNote}`);
     }
   }
   lines.push("");
@@ -1058,7 +1100,7 @@ async function main(): Promise<void> {
   applyDataValueReplacements(testCases, dataValueCandidates, dataValueVarNames);
   const dataValueManifestEntries: TestDataNeeded[] = dataValueCandidates.map((c) => {
     const name = dataValueVarNames.get(c)!;
-    return { name, exampleValue: isSecretContextName(name) ? SECRET_REDACTION_PLACEHOLDER : c.value };
+    return { name, exampleValue: c.value, sensitive: isSecretContextName(name) };
   });
 
   const urlManifestEntries = parameterizeBaseUrls(testCases);

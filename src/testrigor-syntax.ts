@@ -21,7 +21,18 @@ export const CONFIRMED_SYNTAX_NOTES = `
   to" appears in official examples is as part of a user-CHOSEN rule
   NAME (e.g. a rule literally named "go to checkout page", invoked by
   writing that exact name as a bare line) — it is not a built-in verb.
-  To navigate to a URL, always use \`open url "<url>"\`.
+  \`open url "<url>"\` is the real command for URL navigation in
+  general, but see the very next rule for this suite specifically.
+- This suite's app base URL is configured as the suite's own default
+  and is loaded automatically at the start of EVERY test (UI and API
+  alike) — NEVER include an \`open url\` step for the app's own domain,
+  under any form (not the literal URL, not \`\${appBaseUrl}\`, not a
+  relative path like \`open url "/admin"\`). To reach a specific page
+  within the app (e.g. the admin login page), navigate there through
+  normal UI interaction from wherever the test already is — e.g. click
+  the confirmed nav link — exactly as described in that flow's own
+  crawled notes/actions data. Never substitute a direct URL jump for
+  that interaction, even for a sub-path.
 - Reusable rules are defined once (name + steps) and invoked elsewhere
   by writing the rule's name as a bare line, e.g. a rule named
   \`go to checkout page\` is invoked with the line \`go to checkout page\`.

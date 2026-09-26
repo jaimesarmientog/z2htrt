@@ -206,6 +206,12 @@ async function crawlAdminLogin(page: Page): Promise<WebFlow> {
     actions,
     observedValidation,
     notes: [
+      'To reach this page from the app\'s default starting point (the homepage), click the "Admin" ' +
+        "link in the site's top navigation — confirmed by this crawler's own navigation (see " +
+        "crawlAdminLogin above). This page is not reachable via a direct URL open in generated test " +
+        "cases (the suite's default app URL only takes you to the homepage), and the click target is " +
+        'a link, not a button, so it never appears in this flow\'s own "actions" list above — it must ' +
+        "still be the first step of any generated test case for this flow.",
       'A "Logout" button is always present in the nav, even before authentication — it is not ' +
         "auth-gated and simply returns to the homepage. Don't treat its presence as evidence of " +
         "a successful login in generated test cases.",

@@ -355,8 +355,11 @@ function buildUserPrompt(unit: GenerationUnit): string {
     unit.kind === "UI"
       ? "This is a web UI flow. Steps should be element-interaction based (click/enter/check that page contains …). " +
         "Do not include any `open url` step for this app — the suite loads its base URL automatically before every " +
-        "test. If this flow needs a specific page (e.g. the admin login page), reach it via the UI interaction " +
-        "described in this flow's own notes/actions below (e.g. clicking a confirmed nav link), never a direct URL."
+        "test, landing on the homepage. If this flow's page is NOT the homepage itself (e.g. an admin/login page, " +
+        "a settings page), you MUST still navigate there — the correct way is the UI interaction described in this " +
+        "flow's own notes below (e.g. clicking a nav link), never a direct URL. Skipping that navigation step " +
+        "entirely is wrong just as much as using `open url` is — every generated test case must actually arrive " +
+        "at the right page before interacting with it."
       : "This is an API flow. Steps should use the `call api …` syntax shown in the syntax notes. If this " +
         "endpoint requires auth (authRequired: true), inline the full authentication sequence directly in " +
         "each test case that needs it (call POST /auth, extract the token, then use it) — do not assume a " +
