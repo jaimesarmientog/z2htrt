@@ -2,16 +2,8 @@
 
 This refinement pass parameterized the following values. Before running these test cases, add each of these to the suite's **Test Data** section in the testRigor UI:
 
-- `appBaseUrl` → `https://automationintesting.online`
 - `apiBaseUrl` → `https://restful-booker.herokuapp.com`
-- `adminAuthCredentials`:
-  ```json
-  {
-    "username": "admin",
-    "password": "password123"
-  }
-  ```
-- `jimBrownBookingPayload`:
+- `standardBookingPayload`:
   ```json
   {
     "firstname": "Jim",
@@ -25,23 +17,15 @@ This refinement pass parameterized the following values. Before running these te
     "additionalneeds": "Breakfast"
   }
   ```
-- `jamesBrownBookingPayload`:
-  ```json
-  {
-    "firstname": "James",
-    "lastname": "Brown",
-    "totalprice": 222,
-    "depositpaid": false,
-    "bookingdates": {
-      "checkin": "2024-02-01",
-      "checkout": "2024-02-10"
-    },
-    "additionalneeds": "Lunch"
-  }
-  ```
-- `lastname` → `Smith`
-- `phone` → `07123456789`
-- `username` → `invalid_user`
-- `password` → `invalid_pass`
-- `firstname` → `John`
+- `lastname` → `Doe`
 - `email` → `john.doe@example.com`
+- `phone` → `07123456789`
+- `firstname` → `John`
+- `username` → `admin`
+- `password` → `password123` — **⚠️ set up as a HIDDEN value in testRigor**
+- `username2` → `invalid_user`
+- `password2` → `invalid_pass` — **⚠️ set up as a HIDDEN value in testRigor**
+- `password3` → `wrongpassword` — **⚠️ set up as a HIDDEN value in testRigor**
+- `firstname2` → `James`
+- `lastname2` → `Smith`
+- `additionalneeds` → `Lunch`

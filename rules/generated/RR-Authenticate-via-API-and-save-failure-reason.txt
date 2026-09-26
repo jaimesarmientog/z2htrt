@@ -1,0 +1,2 @@
+// Posts the previously built auth body to the auth endpoint and saves the returned failure reason while asserting a 200 response
+call api post from the string with parameters "${apiBaseUrl}/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.reason" and save it as "authReason" and then check that http code is 200

@@ -1,0 +1,8 @@
+// Builds the auth request body from stored username and password, posts it to the auth endpoint, and saves the returned token while asserting a 200 response
+save text with parameters starting from next line and ending with [END]
+{
+  "username": "${username}",
+  "password": "${password}"
+}
+[END] as "authBody"
+call api post from the string with parameters "${apiBaseUrl}/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.token" and save it as "authToken" and then check that http code is 200
