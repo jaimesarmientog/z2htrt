@@ -1,15 +1,14 @@
-// POST /booking with special characters (apostrophe) in firstname/lastname and a large totalprice value returns 200 with the booking created as submitted
+// // Create a booking without the optional additionalneeds field returns 200, confirming the field is not required for a successful creation
 save text starting from next line and ending with [END]
 {
-  "firstname": "O'Brien",
-  "lastname": "D'Angelo",
-  "totalprice": 999999,
-  "depositpaid": true,
+  "firstname": "Mary",
+  "lastname": "Smith",
+  "totalprice": 250,
+  "depositpaid": false,
   "bookingdates": {
-    "checkin": "2025-12-24",
-    "checkout": "2025-12-31"
-  },
-  "additionalneeds": "Late checkout & extra towels"
+    "checkin": "2024-03-10",
+    "checkout": "2024-03-15"
+  }
 }
-[END] as "specialCharBookingBody"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body from stored value "specialCharBookingBody" and get "$.bookingid" and save it as "bookingId4" and get "$.booking.firstname" and save it as "respFirstname4" and get "$.booking.lastname" and save it as "respLastname4" and get "$.booking.totalprice" and save it as "respTotalprice4" and get "$.booking.additionalneeds" and save it as "respAdditionalneeds4" and then check that http code is 200
+[END] as "body"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200

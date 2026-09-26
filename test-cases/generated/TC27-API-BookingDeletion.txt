@@ -1,0 +1,16 @@
+// DELETE /booking/{id} - request with no Cookie/token header on a real, existing booking id is rejected with 403
+save text starting from next line and ending with [END]
+{
+  "firstname": "Alice",
+  "lastname": "Smith",
+  "totalprice": 250,
+  "depositpaid": false,
+  "bookingdates": {
+    "checkin": "2024-03-01",
+    "checkout": "2024-03-10"
+  },
+  "additionalneeds": "Lunch"
+}
+[END] as "bookingBody"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
+call api delete from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingId}" and then check that http code is 403

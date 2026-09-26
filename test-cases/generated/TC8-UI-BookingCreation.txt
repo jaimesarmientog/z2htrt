@@ -1,3 +1,15 @@
-// // Clicking the lowercase "Book now" button on a room card navigates to that room's booking/calendar page, where the "Reserve Now" button becomes available
+// Booking creation - submitting the guest-details form with valid Firstname, Lastname, Email and Phone shows no validation errors
 click exactly "Book now"
-check that page contains "Reserve Now"
+click "Reserve Now"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+enter "John" into "Firstname"
+enter "Doe" into "Lastname"
+enter "john.doe@example.com" into "Email"
+enter "07123456789" into "Phone"
+click "Reserve Now"
+check that page does not contain "Firstname should not be blank"
+check that page does not contain "Lastname should not be blank"
+check that page does not contain "must not be empty"
+check that page does not contain "size must be between 3 and 30"
+check that page does not contain "size must be between 3 and 18"
+check that page does not contain "size must be between 11 and 21"

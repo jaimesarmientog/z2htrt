@@ -1,4 +1,5 @@
-// Admin Login page displays Username, Password fields and Login button
+// Admin login page is reachable via the Admin nav link and displays the expected fields
+click "Admin"
 check that page contains "Username"
 check that page contains "Password"
 check that page contains exactly "Login"

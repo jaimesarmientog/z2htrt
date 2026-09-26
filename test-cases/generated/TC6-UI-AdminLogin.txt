@@ -1,2 +1,5 @@
-// Logout button is visible in the nav on the Admin Login page even before authenticating
+// The Logout button is visible on the admin login page even before authenticating and clicking it returns to the homepage
+click "Admin"
 check that page contains exactly "Logout"
+click exactly "Logout"
+check that page contains "Admin"
