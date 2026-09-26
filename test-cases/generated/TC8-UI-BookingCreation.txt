@@ -1,12 +1,9 @@
 // Booking creation - submitting the guest-details form with valid Firstname, Lastname, Email and Phone shows no validation errors
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
-enter "Doe" into "Lastname"
-enter "john.doe@example.com" into "Email"
-enter "07123456789" into "Phone"
-click "Reserve Now"
+RR - Reserve room and wait for cancel option
+enter stored value "firstname" into "Firstname"
+enter stored value "lastname" into "Lastname"
+enter stored value "email" into "Email"
+RR - Submit reservation phone number
 check that page does not contain "Firstname should not be blank"
 check that page does not contain "Lastname should not be blank"
 check that page does not contain "must not be empty"

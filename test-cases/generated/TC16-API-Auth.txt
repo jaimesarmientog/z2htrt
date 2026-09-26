@@ -5,5 +5,5 @@ save text starting from next line and ending with [END]
   "password": ""
 }
 [END] as "authBody"
-call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and get "$.reason" and save it as "authReason" and then check that http code is 200
+RR - Authenticate via API and save failure reason
 check that stored value "authReason" equals "Bad credentials"

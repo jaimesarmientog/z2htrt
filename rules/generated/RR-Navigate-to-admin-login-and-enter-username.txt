@@ -1,0 +1,3 @@
+// Clicks the Admin link to reach the admin login page and enters the stored admin username into the Username field
+click "Admin"
+enter stored value "username2" into "Username"

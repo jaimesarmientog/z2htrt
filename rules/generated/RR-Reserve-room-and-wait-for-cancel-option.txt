@@ -1,0 +1,4 @@
+// Clicks Book now then Reserve Now on the room detail page and waits until the Cancel option appears below Reserve Now, confirming the booking was created
+click exactly "Book now"
+click "Reserve Now"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"

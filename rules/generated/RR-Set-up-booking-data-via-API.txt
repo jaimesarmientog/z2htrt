@@ -1,2 +1,0 @@
-call api post from the string with parameters "${apiBaseUrl}/auth" with headers "Content-Type:application/json" and body with parameters ${adminAuthCredentials} and get "$.token" and save it as "authToken" and then check that http code is 200
-call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body with parameters ${jimBrownBookingPayload} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
