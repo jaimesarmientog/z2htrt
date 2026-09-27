@@ -1,4 +1,0 @@
-// DELETE /booking/{id} - deletes an existing booking when a valid auth token cookie is supplied, returning 201
-RR - Authenticate via API and save token
-RR - Create booking via API using standard payload
-call api delete from the string with parameters from the string with parameters "${apiBaseUrl}/booking/${bookingId}" with headers with parameters "Cookie:token=${authToken}" and then check that http code is 201

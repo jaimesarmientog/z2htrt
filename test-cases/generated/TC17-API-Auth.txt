@@ -1,9 +1,8 @@
-// POST /auth - valid username with an incorrect password returns HTTP 200 with a Bad credentials reason
-save text with parameters starting from next line and ending with [END]
+// POST /auth - authenticate with valid admin credentials returns a token
+save text starting from next line and ending with [END]
 {
-  "username": "${username}",
-  "password": "${password3}"
+  "username": "admin",
+  "password": "password123"
 }
-[END] as "authBody"
-RR - Authenticate via API and save failure reason
-check that stored value "authReason" equals "Bad credentials"
+[END] as "body"
+call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.token" and save it as "authToken" and then check that http code is 200

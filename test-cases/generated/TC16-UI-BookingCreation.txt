@@ -1,0 +1,8 @@
+// // Booking Creation - clicking Cancel on the guest details form returns to the calendar view without submitting
+click exactly "Book now"
+wait 1 sec up to 10 times until page contains "Reserve Now"
+click "Reserve Now"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+click "Cancel"
+wait 1 sec up to 10 times until page contains "Reserve Now"
+check that page does not contain "Cancel"
