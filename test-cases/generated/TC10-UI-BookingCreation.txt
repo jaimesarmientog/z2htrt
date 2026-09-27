@@ -1,9 +1,7 @@
 // Leaving Email and Phone blank while Firstname and Lastname are filled shows only the email and phone required validation errors
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
-enter "Doe" into "Lastname"
+RR - Initiate room reservation
+enter stored value "firstname" into "Firstname"
+enter stored value "lastname" into "Lastname"
 click "Reserve Now"
 check that page contains "must not be empty"
 check that page does not contain "Firstname should not be blank"

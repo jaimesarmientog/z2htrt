@@ -1,7 +1,5 @@
 // Submitting the guest details form with all fields empty shows all validation error messages
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+RR - Initiate room reservation
 click "Reserve Now"
 check that page contains "size must be between 11 and 21"
 check that page contains "must not be empty"

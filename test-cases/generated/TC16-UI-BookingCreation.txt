@@ -1,10 +1,7 @@
 // Entering only whitespace into Firstname shows the firstname blank validation error
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+RR - Initiate room reservation
 enter "   " into "Firstname"
-enter "Doe" into "Lastname"
-enter "john.doe@example.com" into "Email"
-enter "07123456789" into "Phone"
-click "Reserve Now"
+enter stored value "lastname" into "Lastname"
+enter stored value "email" into "Email"
+RR - Enter phone and reserve
 check that page contains "Firstname should not be blank"

@@ -1,12 +1,9 @@
 // Successful booking creation with valid guest details submits without any validation errors
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
-enter "Doe" into "Lastname"
-enter "john.doe@example.com" into "Email"
-enter "07123456789" into "Phone"
-click "Reserve Now"
+RR - Initiate room reservation
+enter stored value "firstname" into "Firstname"
+enter stored value "lastname" into "Lastname"
+enter stored value "email" into "Email"
+RR - Enter phone and reserve
 check that page does not contain "Firstname should not be blank"
 check that page does not contain "Lastname should not be blank"
 check that page does not contain "size must be between 3 and 30"

@@ -1,11 +1,8 @@
 // Leaving the Email field blank while all other fields are valid shows the email required validation error
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
-enter "Doe" into "Lastname"
-enter "07123456789" into "Phone"
-click "Reserve Now"
+RR - Initiate room reservation
+enter stored value "firstname" into "Firstname"
+enter stored value "lastname" into "Lastname"
+RR - Enter phone and reserve
 check that page contains "must not be empty"
 check that page does not contain "Firstname should not be blank"
 check that page does not contain "Lastname should not be blank"
