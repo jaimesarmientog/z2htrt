@@ -42,10 +42,10 @@ The `testrigor-cli` skill needs the CLI (Node.js ≥ 18) and a Personal Authenti
 
 ```bash
 npm install -g @testrigor/testrigor-cli
-export TESTRIGOR_API_KEY="<YOUR_PERSONAL_AUTH_TOKEN>"   # non-interactive (best for agents/CI)
+export TESTRIGOR_PAT="<YOUR_PERSONAL_AUTH_TOKEN>"   # non-interactive (best for agents/CI)
 ```
 
-> `testrigor authenticate` also stores a token, but it prompts interactively — fine for a human to run **once** during local setup, but an agent/CI loop should use the `TESTRIGOR_API_KEY` environment variable (or `--auth-token`) so nothing hangs.
+> `testrigor authenticate` also stores a token, but it prompts interactively — fine for a human to run **once** during local setup, but an agent/CI loop should use the `TESTRIGOR_PAT` environment variable (or `--auth-token`) so nothing hangs.
 
 ## Prefer an MCP server?
 

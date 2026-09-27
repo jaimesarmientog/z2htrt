@@ -33,7 +33,7 @@ Stop when the exit code is `0` and `report.xml` shows no failures.
 Authenticate non-interactively (required for an agent loop) and pick a suite. Full auth details — including why a human may run `testrigor authenticate` once but an agent must not — are in `testrigor-cli` → "Authentication".
 
 ```bash
-export TESTRIGOR_API_KEY="<YOUR_PAT>"          # app → username (top-right) → API Tokens
+export TESTRIGOR_PAT="<YOUR_PAT>"          # app → username (top-right) → API Tokens
 export SUITE="<TEST_SUITE_ID>"                 # from the suite's URL
 testrigor test-suite config --default "$SUITE" # optional: lets you omit the ID
 testrigor --version                            # sanity check

@@ -45,18 +45,18 @@ The CLI authenticates with a **Personal Authentication Token (PAT)** — your pe
 
 Provide it one of three ways; the CLI resolves in this priority order (first hit wins):
 
-1. **`TESTRIGOR_API_KEY` env var** — fully non-interactive; **use this for agents/CI**.
+1. **`TESTRIGOR_PAT` env var** — fully non-interactive; **use this for agents/CI**.
 2. **`--auth-token <PAT>` flag** — per-command.
 3. **`~/.testrigor/testrigor.yml`** — written once by `testrigor authenticate`.
 
 ```bash
-export TESTRIGOR_API_KEY="<YOUR_PAT>"      # non-interactive; highest priority
+export TESTRIGOR_PAT="<YOUR_PAT>"      # non-interactive; highest priority
 ```
 
 `testrigor authenticate` prompts for the PAT and stores it in `~/.testrigor`. It's an **interactive** prompt, so:
 
 - **A human running setup may use it once** — it then persists, and later commands need no token. Good for a local workstation.
-- **An agent/CI loop must not call it** — the hidden prompt will hang. There, set `TESTRIGOR_API_KEY` (or pass `--auth-token`) instead.
+- **An agent/CI loop must not call it** — the hidden prompt will hang. There, set `TESTRIGOR_PAT` (or pass `--auth-token`) instead.
 
 Suite ID resolves from the positional arg, else the stored default. Set a default (non-interactive) so you can omit it afterward — the ID is in the suite's URL:
 
@@ -157,7 +157,7 @@ Authentication:
 
 | Flag | Purpose |
 |------|---------|
-| `--auth-token <value>` | Personal Authentication Token (PAT). Prefer the `TESTRIGOR_API_KEY` env var for automation. |
+| `--auth-token <value>` | Personal Authentication Token (PAT). Prefer the `TESTRIGOR_PAT` env var for automation. |
 
 Run control:
 
@@ -307,7 +307,7 @@ testrigor test-suite run --file-path ./build/app-release.apk
 
 ## CI/CD notes
 
-- Provide the PAT via an environment secret (`$TESTRIGOR_API_KEY`), never commit it.
+- Provide the PAT via an environment secret (`$TESTRIGOR_PAT`), never commit it.
 - Use **sync mode** (omit `--async`) when you want the job to pass/fail on results.
 - Combine `--junit-report-save-path` with your CI's JUnit ingestion to surface per-test results.
 - `--labels` / `--excluded-labels` let one suite power several pipelines (smoke on every push, full regression nightly).
@@ -315,6 +315,6 @@ testrigor test-suite run --file-path ./build/app-release.apk
 ## Troubleshooting
 
 - `testrigor <command> --help` prints exact flags for the installed version.
-- Auth errors → confirm `TESTRIGOR_API_KEY` is exported (or `--auth-token` is passed) and the token hasn't expired in *API Tokens*. Don't rely on `testrigor authenticate` in automation — it prompts interactively.
+- Auth errors → confirm `TESTRIGOR_PAT` is exported (or `--auth-token` is passed) and the token hasn't expired in *API Tokens*. Don't rely on `testrigor authenticate` in automation — it prompts interactively.
 - Globs match nothing → quote them (`"test-cases/**/*.txt"`) so the CLI expands them, not the shell.
 - `--junit-report-save-path` produces nothing in `--async` mode (no results yet), and won't create missing parent directories — `mkdir -p` first.

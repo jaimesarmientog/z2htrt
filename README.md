@@ -34,7 +34,7 @@ complete architecture and the reasoning behind it.
    Actions):
    - `ANTHROPIC_API_KEY` — a service account key from your Anthropic
      Console Default Workspace.
-   - `TESTRIGOR_API_KEY` — a Personal Access Token from your TestRigor
+   - `TESTRIGOR_PAT` — a Personal Access Token from your TestRigor
      account (Settings → API Tokens). Confirmed available on the free
      "open source" plan.
 3. Run the **Agentic test-case pipeline** workflow manually (Actions tab →

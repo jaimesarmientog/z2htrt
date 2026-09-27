@@ -2,7 +2,7 @@
  * push-and-run.ts — pushes the reviewed test-cases/**\/*.txt and
  * rules/**\/*.txt files into the live TestRigor cloud suite and runs
  * them, using the official testrigor CLI, authenticated via
- * TESTRIGOR_API_KEY.
+ * TESTRIGOR_PAT.
  *
  * TODO (next build step, design doc Section 9 step 6 — and the CLI vs.
  * MCP prototype in step 3 should settle which of the two this file

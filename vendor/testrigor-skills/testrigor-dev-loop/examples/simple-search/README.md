@@ -18,7 +18,7 @@ Each test invokes the `open-search-page` rule by name as its first step; the thi
 
 ## Run it
 
-Auth + default suite must already be configured (`TESTRIGOR_API_KEY` or `testrigor authenticate`; `testrigor test-suite config --default <id>`). Then, from this folder:
+Auth + default suite must already be configured (`TESTRIGOR_PAT` or `testrigor authenticate`; `testrigor test-suite config --default <id>`). Then, from this folder:
 
 ```bash
 mkdir -p .run
