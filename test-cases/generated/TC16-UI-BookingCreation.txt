@@ -1,5 +1,10 @@
-// // Booking Creation - clicking Cancel on the guest details form returns to the calendar view without submitting
-RR - Reserve a room via booking widget
-click "Cancel"
-wait 1 sec up to 10 times until page contains "Reserve Now"
-check that page does not contain "Cancel"
+// Entering only whitespace into Firstname shows the firstname blank validation error
+click exactly "Book now"
+click "Reserve Now"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+enter "   " into "Firstname"
+enter "Doe" into "Lastname"
+enter "john.doe@example.com" into "Email"
+enter "07123456789" into "Phone"
+click "Reserve Now"
+check that page contains "Firstname should not be blank"

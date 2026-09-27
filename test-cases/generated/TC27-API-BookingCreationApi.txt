@@ -1,2 +1,0 @@
-// POST /booking - sending an empty JSON body ({}) returns HTTP 500 Internal Server Error
-call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body from stored value "emptyRequestPayload" and then check that http code is 500

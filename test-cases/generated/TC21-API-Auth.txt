@@ -1,2 +1,0 @@
-// POST /auth - request with an empty JSON body
-call api post from the string with parameters "${apiBaseUrl}/auth" with headers "Content-Type:application/json" and body from stored value "emptyRequestPayload" and then check that http code is 200

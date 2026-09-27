@@ -1,7 +1,10 @@
-// // Booking Creation - Lastname longer than 18 characters triggers length validation
-RR - Reserve a room via booking widget
-enter stored value "firstname" into "Firstname"
-enter "ThisLastnameIsTooLong" into "Lastname"
-enter stored value "email" into "Email"
-RR - Submit reservation phone number
-check that page contains "size must be between 3 and 18"
+// Leaving Email and Phone blank while Firstname and Lastname are filled shows only the email and phone required validation errors
+click exactly "Book now"
+click "Reserve Now"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+enter "John" into "Firstname"
+enter "Doe" into "Lastname"
+click "Reserve Now"
+check that page contains "must not be empty"
+check that page does not contain "Firstname should not be blank"
+check that page does not contain "Lastname should not be blank"

@@ -1,8 +1,11 @@
-// // Booking Creation - Phone longer than 21 digits triggers length validation
-RR - Reserve a room via booking widget
-enter stored value "firstname" into "Firstname"
-enter stored value "lastname" into "Lastname"
-enter stored value "email" into "Email"
-enter "123456789012345678901234" into "Phone"
+// Entering a Lastname shorter than the minimum allowed length shows the lastname size validation error
+click exactly "Book now"
 click "Reserve Now"
-check that page contains "size must be between 11 and 21"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+enter "John" into "Firstname"
+enter "Do" into "Lastname"
+enter "john.doe@example.com" into "Email"
+enter "07123456789" into "Phone"
+click "Reserve Now"
+check that page contains "size must be between 3 and 18"
+check that page does not contain "Lastname should not be blank"

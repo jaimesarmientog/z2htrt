@@ -1,4 +1,4 @@
-// Admin Login page displays Username, Password fields and Login button after navigating from the homepage
+// Admin Login page is reachable via nav and displays the expected login fields and actions
 click "Admin"
 check that page contains "Username"
 check that page contains "Password"

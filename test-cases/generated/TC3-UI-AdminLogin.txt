@@ -1,6 +1,6 @@
-// Submitting the Admin Login form with an invalid username and password shows Invalid credentials
+// Submitting the Admin Login form with an invalid username and password shows an Invalid credentials error
 click "Admin"
-enter stored value "username2" into "Username"
-enter stored value "password2" into "Password"
+enter "invalid_user" into "Username"
+enter "invalid_pass" into "Password"
 click exactly "Login"
 check that page contains "Invalid credentials"
