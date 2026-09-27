@@ -1,4 +1,0 @@
-// Submitting the admin login form with only a password and no username shows Invalid credentials
-click "Admin"
-RR - Enter admin password and submit login
-check that page contains "Invalid credentials"

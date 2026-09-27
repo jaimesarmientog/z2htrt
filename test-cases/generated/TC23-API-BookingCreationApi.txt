@@ -1,0 +1,15 @@
+// POST /booking - creating a booking with a complete valid payload (including optional additionalneeds) returns HTTP 200 and a bookingid
+save text starting from next line and ending with [END]
+{
+  "firstname": "James",
+  "lastname": "Brown",
+  "totalprice": 200,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2024-01-01",
+    "checkout": "2024-01-05"
+  },
+  "additionalneeds": "Breakfast"
+}
+[END] as "bookingBody"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200

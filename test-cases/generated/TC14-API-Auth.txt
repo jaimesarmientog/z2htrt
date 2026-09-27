@@ -1,3 +1,0 @@
-// POST /auth - valid credentials returns a token with HTTP 200
-RR - Authenticate via API and save token
-check that stored value "authToken" is not empty

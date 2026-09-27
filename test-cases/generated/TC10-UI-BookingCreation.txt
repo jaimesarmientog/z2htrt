@@ -1,11 +1,11 @@
-// Booking creation - leaving Firstname blank while other fields are valid shows only the Firstname required and size errors
-RR - Reserve room and wait for cancel option
-enter stored value "lastname" into "Lastname"
-enter stored value "email" into "Email"
-RR - Submit reservation phone number
-check that page contains "Firstname should not be blank"
-check that page contains "size must be between 3 and 30"
-check that page does not contain "Lastname should not be blank"
-check that page does not contain "size must be between 3 and 18"
-check that page does not contain "must not be empty"
-check that page does not contain "size must be between 11 and 21"
+// // Booking Creation - Lastname longer than 18 characters triggers length validation
+click exactly "Book now"
+wait 1 sec up to 10 times until page contains "Reserve Now"
+click "Reserve Now"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+enter "John" into "Firstname"
+enter "ThisLastnameIsTooLong" into "Lastname"
+enter "john.smith@example.com" into "Email"
+enter "12345678901" into "Phone"
+click "Reserve Now"
+check that page contains "size must be between 3 and 18"

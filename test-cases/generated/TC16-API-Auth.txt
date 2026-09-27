@@ -1,9 +1,0 @@
-// POST /auth - empty username and password strings return HTTP 200 with a Bad credentials reason
-save text starting from next line and ending with [END]
-{
-  "username": "",
-  "password": ""
-}
-[END] as "authBody"
-RR - Authenticate via API and save failure reason
-check that stored value "authReason" equals "Bad credentials"

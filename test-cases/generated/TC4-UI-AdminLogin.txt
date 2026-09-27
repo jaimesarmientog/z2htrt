@@ -1,4 +1,5 @@
-// Submitting the admin login form with only a username and no password shows Invalid credentials
-RR - Navigate to admin login and enter username
-click exactly "Login"
-check that page contains "Invalid credentials"
+// Logout button is visible on the Admin Login page before authentication and returns to the homepage when clicked
+click "Admin"
+check that page contains "Logout"
+click exactly "Logout"
+check that page contains "Admin"

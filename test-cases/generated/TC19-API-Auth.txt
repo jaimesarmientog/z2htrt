@@ -1,0 +1,7 @@
+// POST /auth - request missing the password field
+save text starting from next line and ending with [END]
+{
+  "username": "admin"
+}
+[END] as "body"
+call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${body} and then check that http code is 200
