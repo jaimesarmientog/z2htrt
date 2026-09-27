@@ -1,3 +1,0 @@
-// Enters the stored phone number into the Phone field and confirms the reservation by clicking "Reserve Now"
-enter stored value "phone" into "Phone"
-click "Reserve Now"

@@ -1,0 +1,4 @@
+// Clicks the case-sensitive Book now button, then Reserve Now, and waits until the Cancel option appears below Reserve Now to confirm the reservation panel is ready
+click exactly "Book now"
+click "Reserve Now"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
