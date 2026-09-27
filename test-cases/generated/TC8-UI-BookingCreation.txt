@@ -1,11 +1,7 @@
 // // Booking Creation - Firstname longer than 30 characters triggers length validation
-click exactly "Book now"
-wait 1 sec up to 10 times until page contains "Reserve Now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+RR - Reserve a room via booking widget
 enter "ThisFirstnameIsIntentionallyWayTooLong" into "Firstname"
-enter "Smithson" into "Lastname"
-enter "john.smith@example.com" into "Email"
-enter "12345678901" into "Phone"
-click "Reserve Now"
+enter stored value "lastname" into "Lastname"
+enter stored value "email" into "Email"
+RR - Submit reservation phone number
 check that page contains "size must be between 3 and 30"

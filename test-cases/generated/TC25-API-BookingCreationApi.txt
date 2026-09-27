@@ -1,7 +1,7 @@
 // POST /booking - creating a booking with depositpaid set to false returns HTTP 200 and a bookingid
-save text starting from next line and ending with [END]
+save text with parameters starting from next line and ending with [END]
 {
-  "firstname": "Anna",
+  "firstname": "${firstname3}",
   "lastname": "White",
   "totalprice": 300,
   "depositpaid": false,
@@ -12,4 +12,4 @@ save text starting from next line and ending with [END]
   "additionalneeds": "Late checkout"
 }
 [END] as "bookingBody"
-call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
+RR - Create booking via API

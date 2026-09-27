@@ -1,5 +1,5 @@
 // // Attempting to update a booking with an invalid/garbage auth token returns 403 Forbidden
-save text starting from next line and ending with [END]
+save text with parameters starting from next line and ending with [END]
 {
   "firstname": "Bad",
   "lastname": "Token",
@@ -9,7 +9,7 @@ save text starting from next line and ending with [END]
     "checkin": "2022-03-01",
     "checkout": "2022-03-05"
   },
-  "additionalneeds": "None"
+  "additionalneeds": "${additionalneeds2}"
 }
 [END] as "invalidTokenBody"
-call api put "https://restful-booker.herokuapp.com/booking/1" with headers "Content-Type:application/json" and "Cookie:token=invalidtoken12345" and body with parameters ${invalidTokenBody} and then check that http code is 403
+call api put from the string with parameters "${apiBaseUrl}/booking/1" with headers "Content-Type:application/json" and "Cookie:token=invalidtoken12345" and body with parameters ${invalidTokenBody} and then check that http code is 403

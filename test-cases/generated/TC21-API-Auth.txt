@@ -1,5 +1,2 @@
 // POST /auth - request with an empty JSON body
-save text starting from next line and ending with [END]
-{}
-[END] as "body"
-call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${body} and then check that http code is 200
+call api post from the string with parameters "${apiBaseUrl}/auth" with headers "Content-Type:application/json" and body from stored value "emptyRequestPayload" and then check that http code is 200

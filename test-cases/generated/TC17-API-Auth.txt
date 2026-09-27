@@ -1,8 +1,8 @@
 // POST /auth - authenticate with valid admin credentials returns a token
-save text starting from next line and ending with [END]
+save text with parameters starting from next line and ending with [END]
 {
-  "username": "admin",
-  "password": "password123"
+  "username": "${username}",
+  "password": "${password}"
 }
 [END] as "body"
-call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.token" and save it as "authToken" and then check that http code is 200
+call api post from the string with parameters "${apiBaseUrl}/auth" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.token" and save it as "authToken" and then check that http code is 200

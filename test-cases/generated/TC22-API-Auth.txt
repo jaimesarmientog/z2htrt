@@ -5,4 +5,4 @@ save text starting from next line and ending with [END]
   "password": ""
 }
 [END] as "body"
-call api post "https://restful-booker.herokuapp.com/auth" with headers "Content-Type:application/json" and body with parameters ${body} and then check that http code is 200
+RR - Validate auth credentials via API
