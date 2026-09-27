@@ -28,8 +28,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Bumped v4 -> v6 to match crawl-and-generate.yml / refine-tests.yml.
+      # v4 was still being forced onto Node 24 by the runner (see the
+      # deprecation warning in the failed run's log); no input changes
+      # needed, this workflow only ever used `ref: main`.
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: main
 
@@ -60,12 +64,20 @@ jobs:
       #   rules/<name>.txt         - reusable rules (.txt only)
       # Patterns are quoted so the CLI's own glob resolution handles `**` and
       # `{yaml,txt}` expansion, rather than bash.
+      #
+      # Auth fix (2026-09-26): the original bug was --auth-token "$TESTRIGOR_PAT"
+      # referencing a secret (TESTRIGOR_PAT) that didn't exist in the repo —
+      # only TESTRIGOR_API_KEY did — so the reference silently resolved to an
+      # empty string. Rather than renaming the repo secret, standardized on
+      # TESTRIGOR_API_KEY everywhere (matches what's already configured).
+      # Confirmed directly from the CLI's own source (command-base.js,
+      # resolveToken()) that TESTRIGOR_API_KEY as an env var is checked FIRST,
+      # ahead of --auth-token and --token — so no CLI flag is needed at all.
       - name: Push test cases and trigger run (async)
         env:
-          TESTRIGOR_PAT: ${{ secrets.TESTRIGOR_PAT }}
+          TESTRIGOR_API_KEY: ${{ secrets.TESTRIGOR_API_KEY }}
         run: |
           testrigor test-suite run "$TESTRIGOR_SUITE_ID" \
-            --auth-token "$TESTRIGOR_PAT" \
             --url "$TESTRIGOR_APP_URL" \
             --test-cases-path 'test-cases/**/*.{yaml,txt}' \
             --rules-path 'rules/**/*.txt' \
