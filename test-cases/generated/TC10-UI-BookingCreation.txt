@@ -1,9 +1,6 @@
 // Booking Creation - negative: leaving Email blank while other fields are valid shows a required-field validation message
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
-enter "Doe" into "Lastname"
-enter "12345678901" into "Phone"
-click "Reserve Now"
+RR - Book a room and confirm reservation panel
+enter stored value "firstname" into "Firstname"
+enter stored value "lastname" into "Lastname"
+RR - Fill phone number and submit reservation
 check that page contains "must not be empty"

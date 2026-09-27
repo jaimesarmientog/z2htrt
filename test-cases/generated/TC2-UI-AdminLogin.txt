@@ -2,7 +2,6 @@
 click "Admin"
 check that page contains "Username"
 check that page contains "Password"
-enter "invalid_user" into "Username"
-enter "invalid_pass" into "Password"
-click exactly "Login"
+enter stored value "username2" into "Username"
+RR - Fill password and submit login
 check that page contains "Invalid credentials"

@@ -1,0 +1,4 @@
+// Clicks 'Book now', then 'Reserve Now', and waits for the 'Cancel' option to appear below 'Reserve Now' confirming the reservation panel loaded
+click exactly "Book now"
+click "Reserve Now"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"

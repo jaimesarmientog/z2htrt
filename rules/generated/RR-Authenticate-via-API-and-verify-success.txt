@@ -1,0 +1,2 @@
+// Calls the auth endpoint with a pre-built JSON body and headers, checking that the HTTP response code is 200 without saving any token
+call api post from the string with parameters "${apiBaseUrl}/auth" with headers "Content-Type:application/json" and body with parameters ${authBody} and then check that http code is 200

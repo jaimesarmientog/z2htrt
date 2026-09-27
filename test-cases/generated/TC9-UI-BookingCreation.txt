@@ -1,10 +1,7 @@
 // Booking Creation - negative: leaving Lastname blank while other fields are valid shows the Lastname-specific validation messages
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
-enter "john.doe@example.com" into "Email"
-enter "12345678901" into "Phone"
-click "Reserve Now"
+RR - Book a room and confirm reservation panel
+enter stored value "firstname" into "Firstname"
+enter stored value "email" into "Email"
+RR - Fill phone number and submit reservation
 check that page contains "Lastname should not be blank"
 check that page contains "size must be between 3 and 18"

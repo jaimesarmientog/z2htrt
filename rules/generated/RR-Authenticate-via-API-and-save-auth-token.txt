@@ -1,4 +1,4 @@
-// Builds the auth request body from stored username and password, posts it to the auth endpoint, and saves the returned token while asserting a 200 response
+// Builds the authentication JSON body from stored username and password, calls the auth endpoint, extracts the token from the response, and saves it as authToken while verifying HTTP 200
 save text with parameters starting from next line and ending with [END]
 {
   "username": "${username}",

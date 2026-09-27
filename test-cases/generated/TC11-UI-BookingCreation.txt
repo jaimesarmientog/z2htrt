@@ -1,10 +1,8 @@
 // Booking Creation - negative: leaving Phone blank while other fields are valid shows the Phone-specific validation messages
-click exactly "Book now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
-enter "Doe" into "Lastname"
-enter "john.doe@example.com" into "Email"
+RR - Book a room and confirm reservation panel
+enter stored value "firstname" into "Firstname"
+enter stored value "lastname" into "Lastname"
+enter stored value "email" into "Email"
 click "Reserve Now"
 check that page contains "must not be empty"
 check that page contains "size must be between 11 and 21"
