@@ -1036,7 +1036,14 @@ async function writeTestDataManifest(entries: TestDataNeeded[]): Promise<void> {
 // ---------------------------------------------------------------------
 
 function slugForFilename(text: string): string {
-  return text.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  // A rule's filename (minus .txt) IS its name, as far as testrigor-cli's
+  // parseRules() and every bare invocation line in the test cases are
+  // concerned — confirmed from the CLI's own source, which reads the name
+  // purely from the filename, never from file content. Only strip
+  // characters that are actually illegal in filenames (Windows + POSIX);
+  // spaces and the " - " separator in "RR - X" must survive byte-for-byte
+  // to keep matching the invocation text.
+  return text.replace(/[\/\\:*?"<>|\x00-\x1F]/g, "").trim();
 }
 
 async function resetDir(dir: string): Promise<void> {
