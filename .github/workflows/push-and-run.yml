@@ -28,8 +28,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Bumped v4 -> v6 to match crawl-and-generate.yml / refine-tests.yml.
+      # v4 was still being forced onto Node 24 by the runner (see the
+      # deprecation warning in the failed run's log); no input changes
+      # needed, this workflow only ever used `ref: main`.
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: main
 
@@ -60,12 +64,26 @@ jobs:
       #   rules/<name>.txt         - reusable rules (.txt only)
       # Patterns are quoted so the CLI's own glob resolution handles `**` and
       # `{yaml,txt}` expansion, rather than bash.
+      #
+      # Auth fix (2026-09-26): the repo secret is named TESTRIGOR_PAT
+      # (human-facing name), but the CLI itself only recognizes the
+      # TESTRIGOR_API_KEY environment variable natively — confirmed
+      # directly from the CLI's own "no auth token found" error output
+      # in the failed run's log, which lists it as option 1. Previously
+      # this step passed --auth-token "$TESTRIGOR_PAT" while the actual
+      # repo secret was still named TESTRIGOR_API_KEY, so the reference
+      # to secrets.TESTRIGOR_PAT silently resolved to an empty string.
+      # ⚠️ REVIEW: this relies on the GitHub secret actually being
+      # renamed to TESTRIGOR_PAT in Settings > Secrets and variables >
+      # Actions (GitHub has no in-place rename — delete the old
+      # TESTRIGOR_API_KEY secret and create a new TESTRIGOR_PAT secret
+      # with the same value). Until that manual step is done, this will
+      # fail the same way.
       - name: Push test cases and trigger run (async)
         env:
-          TESTRIGOR_PAT: ${{ secrets.TESTRIGOR_PAT }}
+          TESTRIGOR_API_KEY: ${{ secrets.TESTRIGOR_PAT }}
         run: |
           testrigor test-suite run "$TESTRIGOR_SUITE_ID" \
-            --auth-token "$TESTRIGOR_PAT" \
             --url "$TESTRIGOR_APP_URL" \
             --test-cases-path 'test-cases/**/*.{yaml,txt}' \
             --rules-path 'rules/**/*.txt' \
