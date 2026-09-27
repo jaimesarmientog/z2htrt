@@ -1,7 +1,10 @@
-// // Booking Creation - Firstname at minimum boundary of 3 characters is accepted without length error
-RR - Reserve a room via booking widget
-enter "Jon" into "Firstname"
-enter stored value "lastname" into "Lastname"
-enter stored value "email" into "Email"
-RR - Submit reservation phone number
-check that page does not contain "size must be between 3 and 30"
+// Entering a Phone number longer than the maximum allowed length shows the phone size validation error
+click exactly "Book now"
+click "Reserve Now"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+enter "John" into "Firstname"
+enter "Doe" into "Lastname"
+enter "john.doe@example.com" into "Email"
+enter "012345678901234567890123" into "Phone"
+click "Reserve Now"
+check that page contains "size must be between 11 and 21"

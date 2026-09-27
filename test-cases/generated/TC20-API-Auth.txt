@@ -1,7 +1,0 @@
-// POST /auth - request missing the username field
-save text with parameters starting from next line and ending with [END]
-{
-  "password": "${password}"
-}
-[END] as "body"
-RR - Validate auth credentials via API

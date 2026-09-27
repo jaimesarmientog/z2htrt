@@ -1,8 +1,0 @@
-// POST /auth - request with empty string username and password
-save text starting from next line and ending with [END]
-{
-  "username": "",
-  "password": ""
-}
-[END] as "body"
-RR - Validate auth credentials via API

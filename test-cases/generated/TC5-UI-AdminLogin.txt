@@ -1,0 +1,5 @@
+// Submitting the Admin Login form with only a password filled in and no username shows an Invalid credentials error
+click "Admin"
+enter "invalid_pass" into "Password"
+click exactly "Login"
+check that page contains "Invalid credentials"

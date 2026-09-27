@@ -1,0 +1,14 @@
+// // POST /booking - creates a booking successfully when the optional additionalneeds field is omitted
+save text starting from next line and ending with [END]
+{
+  "firstname": "Jane",
+  "lastname": "Doe",
+  "totalprice": 200,
+  "depositpaid": false,
+  "bookingdates": {
+    "checkin": "2025-02-01",
+    "checkout": "2025-02-10"
+  }
+}
+[END] as "body"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
