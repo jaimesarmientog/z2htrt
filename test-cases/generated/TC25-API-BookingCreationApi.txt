@@ -1,0 +1,5 @@
+// // Attempt to create a booking with an empty JSON payload via POST /booking and verify the observed 500 Internal Server Error response
+save text starting from next line and ending with [END]
+{}
+[END] as "body"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${body} and then check that http code is 500

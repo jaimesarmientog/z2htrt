@@ -1,2 +1,0 @@
-// PUT /booking/{id} - request with an empty token value in the Cookie header is rejected with HTTP 403
-call api put from the string with parameters "${apiBaseUrl}/booking/999999" with headers "Content-Type:application/json" and "Cookie:token=" and body from stored value "standardBookingPayload" and then check that http code is 403

@@ -1,3 +1,0 @@
-// PUT /booking/{id} - request with no Cookie/token header is rejected with HTTP 403 and a Forbidden response
-call api put from the string with parameters "${apiBaseUrl}/booking/999999" with headers "Content-Type:application/json" and body from stored value "standardBookingPayload" and get "$" and save it as "responseBody" and then check that http code is 403
-check that stored value "responseBody" contains "Forbidden"

@@ -1,5 +1,6 @@
-// Admin login page is reachable via the Admin nav link and displays the expected fields
+// Admin login shows Invalid credentials error when submitted with no username or password entered
 click "Admin"
 check that page contains "Username"
 check that page contains "Password"
-check that page contains exactly "Login"
+click exactly "Login"
+check that page contains "Invalid credentials"

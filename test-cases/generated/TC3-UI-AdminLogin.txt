@@ -1,4 +1,7 @@
-// Submitting the admin login form with invalid username and password shows Invalid credentials
-RR - Navigate to admin login and enter username
-RR - Enter admin password and submit login
+// Admin login shows Invalid credentials error when only the username field is filled in and password is left empty
+click "Admin"
+check that page contains "Username"
+check that page contains "Password"
+enter "invalid_user" into "Username"
+click exactly "Login"
 check that page contains "Invalid credentials"
