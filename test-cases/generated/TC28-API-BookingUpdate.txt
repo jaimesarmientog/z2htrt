@@ -1,0 +1,29 @@
+// // PUT /booking/{id} - request carrying an invalid (garbage) auth token is rejected with 403, even against an existing booking
+save text starting from next line and ending with [END]
+{
+  "firstname": "Anna",
+  "lastname": "White",
+  "totalprice": 150,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2024-04-01",
+    "checkout": "2024-04-10"
+  },
+  "additionalneeds": "None"
+}
+[END] as "bookingBodyForInvalidTokenTest"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBodyForInvalidTokenTest} and get "$.bookingid" and save it as "bookingIdForInvalidTokenTest" and then check that http code is 200
+save text starting from next line and ending with [END]
+{
+  "firstname": "Anna",
+  "lastname": "White",
+  "totalprice": 175,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2024-04-02",
+    "checkout": "2024-04-12"
+  },
+  "additionalneeds": "Late checkout"
+}
+[END] as "updateBodyForInvalidTokenTest"
+call api put from the string with parameters "https://restful-booker.herokuapp.com/booking/${bookingIdForInvalidTokenTest}" with headers with parameters "Content-Type:application/json" and "Cookie:token=invalidtoken12345" and body with parameters ${updateBodyForInvalidTokenTest} and then check that http code is 403

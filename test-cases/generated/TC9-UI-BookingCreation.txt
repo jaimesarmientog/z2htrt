@@ -1,5 +1,10 @@
-// Booking creation - clicking Cancel on the guest-details form returns to the calendar view without submitting
-RR - Reserve room and wait for cancel option
-click "Cancel"
-check that page does not contain "Cancel"
-check that page contains "Reserve Now"
+// Booking Creation - negative: leaving Lastname blank while other fields are valid shows the Lastname-specific validation messages
+click exactly "Book now"
+click "Reserve Now"
+wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
+enter "John" into "Firstname"
+enter "john.doe@example.com" into "Email"
+enter "12345678901" into "Phone"
+click "Reserve Now"
+check that page contains "Lastname should not be blank"
+check that page contains "size must be between 3 and 18"

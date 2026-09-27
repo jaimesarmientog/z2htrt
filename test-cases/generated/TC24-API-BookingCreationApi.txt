@@ -1,0 +1,15 @@
+// // Create a booking with a boundary totalprice value of 0 via POST /booking and verify it is still accepted with a 200 response
+save text starting from next line and ending with [END]
+{
+  "firstname": "Edge",
+  "lastname": "Case",
+  "totalprice": 0,
+  "depositpaid": true,
+  "bookingdates": {
+    "checkin": "2024-05-01",
+    "checkout": "2024-05-02"
+  },
+  "additionalneeds": "None"
+}
+[END] as "body"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200

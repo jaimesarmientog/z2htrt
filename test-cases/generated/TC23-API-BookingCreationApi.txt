@@ -1,0 +1,14 @@
+// // Create a booking with only the required fields (no additionalneeds) via POST /booking and verify it still succeeds with a 200 response
+save text starting from next line and ending with [END]
+{
+  "firstname": "Mary",
+  "lastname": "Smith",
+  "totalprice": 200,
+  "depositpaid": false,
+  "bookingdates": {
+    "checkin": "2024-03-10",
+    "checkout": "2024-03-15"
+  }
+}
+[END] as "body"
+call api post "https://restful-booker.herokuapp.com/booking" with headers "Content-Type:application/json" and body with parameters ${body} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200
