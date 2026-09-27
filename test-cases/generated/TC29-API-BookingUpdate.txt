@@ -1,5 +1,5 @@
 // // Attempting to update a booking without any auth token returns 403 Forbidden
-save text starting from next line and ending with [END]
+save text with parameters starting from next line and ending with [END]
 {
   "firstname": "Test",
   "lastname": "User",
@@ -9,7 +9,7 @@ save text starting from next line and ending with [END]
     "checkin": "2021-01-01",
     "checkout": "2021-01-05"
   },
-  "additionalneeds": "None"
+  "additionalneeds": "${additionalneeds2}"
 }
 [END] as "unauthBody"
-call api put "https://restful-booker.herokuapp.com/booking/999999" with headers "Content-Type:application/json" and body with parameters ${unauthBody} and then check that http code is 403
+call api put from the string with parameters "${apiBaseUrl}/booking/999999" with headers "Content-Type:application/json" and body with parameters ${unauthBody} and then check that http code is 403

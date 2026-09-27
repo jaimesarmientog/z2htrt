@@ -1,2 +1,2 @@
-// Posts a dynamically built booking body to the booking endpoint and saves the returned booking id while asserting a 200 response
+// Calls POST /booking with the stored booking body, saves the returned bookingid as "bookingId", and verifies the response returns HTTP 200
 call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body with parameters ${bookingBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200

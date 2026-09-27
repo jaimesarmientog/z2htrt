@@ -1,0 +1,2 @@
+// Calls POST /booking with a previously generated booking body, saves the returned bookingid as "bookingId", and verifies the response returns HTTP 200
+call api post from the string with parameters "${apiBaseUrl}/booking" with headers "Content-Type:application/json" and body with parameters ${createBookingBody} and get "$.bookingid" and save it as "bookingId" and then check that http code is 200

@@ -1,11 +1,7 @@
 // // Booking Creation - Phone at minimum boundary of 11 digits is accepted without length error
-click exactly "Book now"
-wait 1 sec up to 10 times until page contains "Reserve Now"
-click "Reserve Now"
-wait 1 sec up to 10 times until page contains "Cancel" below "Reserve Now"
-enter "John" into "Firstname"
-enter "Smithson" into "Lastname"
-enter "john.smith@example.com" into "Email"
-enter "12345678901" into "Phone"
-click "Reserve Now"
+RR - Reserve a room via booking widget
+enter stored value "firstname" into "Firstname"
+enter stored value "lastname" into "Lastname"
+enter stored value "email" into "Email"
+RR - Submit reservation phone number
 check that page does not contain "size must be between 11 and 21"

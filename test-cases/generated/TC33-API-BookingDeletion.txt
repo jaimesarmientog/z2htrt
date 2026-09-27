@@ -1,2 +1,2 @@
 // DELETE /booking/{id} - request with no Cookie/token header is rejected with 403 Forbidden
-call api delete "https://restful-booker.herokuapp.com/booking/999999" and then check that http code is 403
+call api delete from the string with parameters "${apiBaseUrl}/booking/999999" and then check that http code is 403
